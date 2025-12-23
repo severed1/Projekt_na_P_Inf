@@ -39,3 +39,6 @@
 
 # debug information files
 *.dwo
+
+# to powoduje ze plik gry nie bedzie przesyłany
+game 
