@@ -16,3 +16,6 @@ Komendy do gita:
 `git pull` - zciąga zmiany na lokalne urządzenie 
 
 Pozycja (0, 0) z tego co rozumiem jest w lewym górnym rogu okna
+
+W folderze background jest przykładowe tło (wymiary ma 480szer/180wys wiec mozna znalezc jakies troche wieksze do testow), jak już ustalimy co i jak to poszukamy takiego jakie bedzie pasowało do gry, dla osobnych leveli możemy dawać inne tła przykładowo.
+Tło działa w taki sposób że jest grafika tak narysowana ze jakby ciągnie się w nieskończonośc jeżeli ustawimy kolejne kopie koło siebie (to sie nazywa obraz parallax bodajże). W grze możemy po porstu operować na dwóch tłach - jedno dojdzie do konca to od razu zaczyna się drugie a to pierwsze zostaje przeniesione za drugie i tak w nieskończoność, to daje wrażenie że postać biegnie a tak naprwde stoi w miejscu i tylko tło sie rusza.
