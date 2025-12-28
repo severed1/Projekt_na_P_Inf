@@ -18,9 +18,6 @@
 #define dlugosc_skoku 20 * 3
 #define wysokosc_skoku 60.0f * 3
 
-// prototypy funkcji
-float skakanie(float ziemiaY, int klatka, int dlugoscSkoku, float jumpHeight);
-
 using namespace std;
 
 int main()
@@ -37,7 +34,10 @@ int main()
 
     Vector2 polozenie_gracza = {polozenie_gracza_x, polozenie_gracza_y}; // inicjowanie vektora 2 wymiarowego
 
-    int klatka_skoku = -1;
+
+    //zmienne zamiast int klatka_skoku
+    float czas_skoku = 0.0f;
+    float max_czas_skoku = 0.5f; //tutaj mozna zmieniac czas trwania skoku (w sekundach)
 
     // tło
     Texture2D background = LoadTexture("assets/background/background.png"); // wczytywanie tekstury tła
@@ -51,26 +51,27 @@ int main()
         // poruszanie sie
         float dt = GetFrameTime();
 
+        if (IsKeyPressed(KEY_SPACE) && czas_skoku <= 0){
+            czas_skoku = 0.001f; //zaczynamy skok
+        }
+
+        if (czas_skoku > 0){
+            float t = czas_skoku / max_czas_skoku;
+            float parabola = 4.0f * t * (1.0f - t);
+            polozenie_gracza.y = ziemiaY - wysokosc_skoku * parabola;
+
+            czas_skoku += dt; //dodajemy czas, ktory uplynal (GetFrameTime)
+
+            if (czas_skoku >= max_czas_skoku){
+                czas_skoku = 0; //koniec skoku
+                polozenie_gracza.y = ziemiaY; //upewniamy sie ze postac stoi na ziemi
+            }
+        }
+
         scrollingBack -= scrollSpeed * dt; // aktualizacja pozycji tła
         if (scrollingBack <= -szerokosc_tla_przeskalowana)       //* skalowanie_borazu_tla) // resetowanie pozycji gry tło wyjdzie poza ekran
         {
             scrollingBack += szerokosc_tla_przeskalowana;
-        }
-
-        if (klatka_skoku >= dlugosc_skoku)
-        {
-            klatka_skoku = -1;
-        }
-
-        if (IsKeyPressed(KEY_SPACE) && klatka_skoku == -1)
-        {
-            klatka_skoku = 0;
-        }
-
-        if (klatka_skoku != -1)
-        {
-            polozenie_gracza.y = skakanie(ziemiaY, klatka_skoku, dlugosc_skoku, wysokosc_skoku); // 60px wysokości
-            klatka_skoku++;
         }
 
         // rysowanie grafiki gracza
@@ -99,11 +100,4 @@ int main()
     CloseWindow();
 
     return 0;
-}
-
-float skakanie(float ziemiaY, int klatka, int dlugoscSkoku, float jumpHeight)
-{
-    float t = (float)klatka / (float)dlugoscSkoku;
-    float parabola = 4.0f * t * (1.0f - t);
-    return ziemiaY - jumpHeight * parabola;
 }
