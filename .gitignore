@@ -42,3 +42,4 @@
 
 # to powoduje ze plik gry nie bedzie przesyłany
 game 
+*.json
