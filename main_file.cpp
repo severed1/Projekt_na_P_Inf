@@ -2,6 +2,10 @@
 // biblioteki
 #include <iostream>
 #include "raylib.h"
+#include <vector>
+#include <algorithm>
+#include <fstream>
+#include <string>
 
 // wartosci dla okna
 #define wysokosc_okna 720                          // 180
@@ -20,8 +24,14 @@
 
 using namespace std;
 
+//struktura do zapisu nicku z highscorem
+struct Rekord {
+    std::string nick;
+    int dystans;
+};
+
 //stany gry
-enum StanGry {MENU, GRA, PAUZA};
+enum StanGry {MENU, LEVELONE, LEVELTWO ,PAUZA};
 StanGry aktualnyStan = MENU;
 
 //uniwersalna funkcja przycisku by nie pisac za kazdym razem tego samego
@@ -38,6 +48,44 @@ bool CzyMyszkaNadPrzyciskiem(Rectangle obszar){
     return CheckCollisionPointRec(GetMousePosition(), obszar);
 }
 
+//funkcja zapisujaca do pliku w momencie przegranej lub wyjscia do menu
+void UpdateTop10(string nick, int wynik){
+    if (nick == "") nick = "Sigma"; //jkak ktos nie poda nicku to ustawiamy bazowo nazwe
+
+    vector<Rekord> tabela;
+
+    //wczytujemy instniejace rekordy z pliku 
+    ifstream plikWe("top10.txt");
+    Rekord r;
+    while (plikWe >> r.nick >> r.dystans){ //przy kazdej linijce zczytujemy nick i wynik
+        tabela.push_back(r);
+    }
+    plikWe.close();
+
+    //dodajemy aktualny wynik gracza
+    Rekord nowy;
+    nowy.nick = nick;
+    nowy.dystans = wynik;
+    tabela.push_back(nowy);
+    
+    //sortujemy tabele od najwiekszego dystansu
+    sort(tabela.begin(), tabela.end(), [](const Rekord& a, const Rekord& b){
+        return a.dystans > b.dystans;
+    });
+
+    //zachowujemy tylko 10 pierwszych wynikow
+    if(tabela.size() >10){
+        tabela.resize(10);
+    }
+
+    //zapisujemy posortowana tablice spowrotem do pliku
+    ofstream plikWy("top10.txt");
+    for(const auto& r: tabela){
+        plikWy << r.nick << " " << r.dystans << "\n";
+    }
+    plikWy.close();
+}
+
 int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarach
@@ -45,6 +93,13 @@ int main()
     SetTargetFPS(ilosc_fps);                                                   // ustala ilosc docelowa fps w oknie
 
     Texture2D tekstura_gracza = LoadTexture("assets/gracz_1.png"); // zapisywanie tekstury gracza z katalogu assets i pliku gracz_1
+
+    int distance; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss
+
+    //---ZMIENNE DO TABELI WYNIKOW I NICKU GRACZA
+    char nickname[16] = "\0"; // tablica na nick (15znakow)
+    int charCount = 0; 
+    int highScore = 0;
 
     // wartości dla postaci
     float polozenie_gracza_x = 20;
@@ -80,12 +135,30 @@ int main()
         //-- IF DLA POSZCZEGOLNYCH STANOW GRY
         if (aktualnyStan == MENU){
             //--- KOD MENU ---
-            if (CzyKliknietoPrzycisk(btnStart)) aktualnyStan = GRA;
+            if (CzyKliknietoPrzycisk(btnStart) || IsKeyPressed(KEY_ENTER)) aktualnyStan = LEVELONE;
             if (CzyKliknietoPrzycisk(btnExit)) break; //zamykanie programu
+
+            //wczytywanie wpisywanego nicku
+            int klawisz = GetCharPressed();
+            while (klawisz > 0){
+                if ((klawisz >= 32) && (klawisz <=125) && (charCount < 15)){
+                    nickname[charCount] = (char)klawisz;
+                    nickname[charCount + 1] = '\0';
+                    charCount++;
+                }
+                klawisz = GetCharPressed();
+            }
+
+            //usuwanie znaku przy kliknieciu backspace
+            if(IsKeyPressed(KEY_BACKSPACE) && charCount > 0){
+                charCount--;
+                nickname[charCount] = '\0';
+            }
         } 
-        else if (aktualnyStan == GRA) 
+        else if (aktualnyStan == LEVELONE) 
         // --- KOD GRY ---
         {
+            distance++;
             //przechodzimy do pauzy gdy kliknie ktos escape
             if (IsKeyPressed(KEY_ESCAPE)) aktualnyStan = PAUZA;
 
@@ -117,12 +190,17 @@ int main()
                 scrollingBack += szerokosc_tla_przeskalowana;
             }
         } else if (aktualnyStan == PAUZA) {
-            if (IsKeyPressed(KEY_ESCAPE)) aktualnyStan = GRA;
-            if (CzyKliknietoPrzycisk(btnWznow)) aktualnyStan = GRA;
+            if (IsKeyPressed(KEY_ESCAPE)) aktualnyStan = LEVELONE;
+            if (CzyKliknietoPrzycisk(btnWznow)) aktualnyStan = LEVELONE;
             if (CzyKliknietoPrzycisk(btnPowrotMenu)){
+                UpdateTop10(nickname, distance);
+                distance = 0;
                 aktualnyStan = MENU;
             }
-            if (CzyKliknietoPrzycisk(btnPauzaExit)) break;
+            if (CzyKliknietoPrzycisk(btnPauzaExit)){
+                UpdateTop10(nickname, distance);
+                break;
+            }
         }
         
 
@@ -148,14 +226,33 @@ int main()
             //napis w menu
             DrawText("TYTUL GRY", szerokosc_okna / 2-150, 100, 40, DARKGRAY);
 
+            //Pole na wpisywanie nicku
+            DrawText("WPISZ SWOJ NICK: ", szerokosc_okna/2-100, 200, 20, DARKGRAY);
+            DrawRectangle(szerokosc_okna/2-105, 230, 210, 40, LIGHTGRAY); //pole tekstowe
+            DrawText(nickname, szerokosc_okna/2-100, 240, 20, BLACK);
+
             //rysowanie przycisku (zmienia kolor po najechaniu myszką)
             DrawRectangleRec(btnStart, CzyMyszkaNadPrzyciskiem(btnStart) ? kolor1btnStart : kolor2btnStart);
             DrawText("START", btnStart.x + 60, btnStart.y + 15, 20, WHITE);
             
             DrawRectangleRec(btnExit, CzyMyszkaNadPrzyciskiem(btnExit) ? kolor1btnExit : kolor2btnExit);
             DrawText("WYJDZ", btnExit.x + 60, btnExit.y + 15, 20, WHITE);
+
+            //--RYSOWANIE LEADERBOARD
+            ifstream plikPokaz("top10.txt");
+            string n;
+            int d;
+            int yOffset = 0;
+
+            DrawText("TABELA TOP 10: ", 50, 50, 20, GOLD);
+
+            while (plikPokaz >> n >> d && yOffset < 10){
+                DrawText(TextFormat("%d. %s - %d", yOffset + 1, n.c_str(), d), 50, 80 + (yOffset * 25), 18, DARKGRAY);
+                yOffset++;
+            }
+            plikPokaz.close();
         } 
-        else if(aktualnyStan == GRA || aktualnyStan == PAUZA) // gre rysujemy nawet jak jestesmy w pauzie
+        else if(aktualnyStan == LEVELONE || aktualnyStan == PAUZA) // gre rysujemy nawet jak jestesmy w pauzie
         {
             // rysownanie tła w dwóch kopiach by płynnie tło cały czas się wyświetlało bez luk
             // pierwsza kopia tła
@@ -169,6 +266,8 @@ int main()
             }
 
             DrawTextureEx(tekstura_gracza, polozenie_gracza, 0.0f, skalowanie_obrazu_gracza, WHITE); // rysowanie gracza w zdefiniowanej skali
+            DrawText("POZIOM 1", 10, 10, 20, GRAY);
+            DrawText(TextFormat("DYSTANS: %05d", distance), szerokosc_okna-200, 10, 20, GRAY);
             if (aktualnyStan == PAUZA){
                 // Nakładamy lekki przyciemniający filtr na ekran gry
                 DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.5f));
