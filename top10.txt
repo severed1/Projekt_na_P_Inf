@@ -1,6 +1,10 @@
-jan 2311
-Test 1315
-Sigma 940
-lol 646
-Sigma 391
-Test 317
+1_miejsce 62269
+AGHFORTHEWIN 14465
+UJGUROM 11077
+test_87 10007
+Sigma 8937
+UJGUROM 6799
+Sigma 6091
+test_16 5823
+Sigma 4954
+Sigma 4066
