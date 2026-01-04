@@ -14,19 +14,30 @@
 #define wysokosc_okna 720
 #define szerokosc_okna 1280
 #define nazwa_gry_wyswietlana_na_oknie "Nazwa Gry" // to zmienimy jak ustalimy fabule
-#define ilosc_fps 90
+#define ilosc_fps 120
 
 // uzywam do skalowania grafiki gracza by byla mniejsza
-#define skalowanie_obrazu_gracza 0.2f
-#define skalowanie_obrazu_gracza_skoku 0.18f
-#define skalowanie_obrazu_kaktus 0.1302f
-#define skalowanie_obrazu_kaktus_wysoki 0.1302f
-#define skalowanie_obrazu_tla 5.0f
-
+#define skalowanie_obrazu_gracza 0.23f
+#define skalowanie_obrazu_gracza_skoku 0.23f
+#define skalowanie_obrazu_szkieleta 0.27f
+#define skalowanie_obrazu_duch 0.05f
+#define skalowanie_obrazu_tla 1.2 // 1.2 //3
+#define skalowanie_obrazu_tla_menu 0.84
 // porusznie sie
 #define prendkosc 300.0f
 #define dlugosc_skoku 20 * 3
 #define wysokosc_skoku 60.0f * 3
+
+#define offsetYducha_1  (duch.polozenie.y + 40) 
+
+#define offsetYducha_2  (duch.polozenie.y + 50)
+#define offsetXducha_2  (duch.polozenie.x + 80)
+
+#define offsetYducha_3  (duch.polozenie.y + 80)
+#define offsetXducha_3  (duch.polozenie.x + 140)
+
+#define offsetYducha_4  (duch.polozenie.y + 120)
+#define offsetXducha_4  (duch.polozenie.x + 210)
 
 using namespace std;
 
@@ -145,56 +156,70 @@ int main()
     SetExitKey(KEY_NULL);                                                      // wylaczamy bazowe zachowanie klawisza esc
     SetTargetFPS(ilosc_fps);                                                   // ustala ilosc docelowa fps w oknie
 
-    random_device rd; // seed (true randomness if available)
+    random_device rd;
     mt19937 gen(rd());
 
-    Texture2D background = LoadTexture("assets/background/background.png"); // wczytywanie tekstury tła
+    Texture2D background = LoadTexture("assets/background/background_3.png"); // wczytywanie tekstury tła
 
     Texture2D tekstura_skoku = LoadTexture("assets/bohater/skok.png");
 
-    Texture2D tekstura_gracza = LoadTexture("assets/bohater/gracz_1.png"); // zapisywanie tekstury gracza z katalogu assets i pliku gracz_1
+    Texture2D tekstura_gracza_1 = LoadTexture("assets/bohater/rycez_1.png"); // zapisywanie tekstury gracza z katalogu assets i pliku gracz_1
+    Texture2D tekstura_gracza_2 = LoadTexture("assets/bohater/rycez_2.png");
+    Texture2D tekstura_gracza_3 = LoadTexture("assets/bohater/rycez_3.png");
 
-    Texture2D texKaktus = LoadTexture("assets/przeszkody/kaktus_1.png"); // wczytywanie tekstury kaktusa
+    Texture2D szkielet_tekstura = LoadTexture("assets/przeszkody/szkielet.png"); // wczytywanie tekstury szkieleta
+    Texture2D szkielet_tekstura_2 = LoadTexture("assets/przeszkody/skeleton_2.png");
+    Texture2D szkielet_tekstura_3 = LoadTexture("assets/przeszkody/szkielet_3.png");
 
-    Texture2D texKaktus_wysoki = LoadTexture("assets/przeszkody/kaktus_2.png");
+    Texture2D duch_tekstura = LoadTexture("assets/przeszkody/duch.png");
 
     Texture2D czaszka = LoadTexture("assets/background/death.png");
 
     Texture2D czaszka_2 = LoadTexture("assets/background/death_2.png");
 
-    int animacja; // nie istotne uzyte do próby animacji 
+    Texture2D slizg = LoadTexture("assets/bohater/slizg.png");
+
+    Texture2D background_menu = LoadTexture("assets/background/background_menu.png");
+
+    Texture2D background_las = LoadTexture("assets/backgournd/las.png");
+
+    int animacja = 0; // nie istotne uzyte do próby animacji
     // generowanie losowej pozycji dla kaktusow
 
+
     float rozstrzal_przy_losowaniu = 3000;
-    uniform_int_distribution<int> pozycjaX(szerokosc_okna + texKaktus.width * skalowanie_obrazu_kaktus, rozstrzal_przy_losowaniu);
-    uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + texKaktus_wysoki.width * skalowanie_obrazu_kaktus_wysoki, rozstrzal_przy_losowaniu);
+    uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
+    uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
+    uniform_int_distribution<int> pozycjay_wysoki(300,  (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 40);
+
+    
 
     // upewnianie sie ze nie wygeneruja sie zablisko
-    float minDist = texKaktus.width * skalowanie_obrazu_kaktus + tekstura_gracza.width * skalowanie_obrazu_gracza + texKaktus_wysoki.width * skalowanie_obrazu_kaktus_wysoki;
+    float minDist = szkielet_tekstura.width * skalowanie_obrazu_szkieleta + tekstura_gracza_1.width * skalowanie_obrazu_gracza + duch_tekstura.width * skalowanie_obrazu_duch;
 
-    int losowa_kaktus;
-    int losowa_kaktus_wysoki;
+    int losowa_szkielet;
+    int losowa_duch;
     do
     {
-        losowa_kaktus = pozycjaX(gen);
-        losowa_kaktus_wysoki = pozycjaX_wysoki(gen);
-    } while (abs(losowa_kaktus - losowa_kaktus_wysoki) < minDist);
+        losowa_szkielet = pozycjaX(gen);
+        losowa_duch = pozycjaX_wysoki(gen);
+    } while (abs(losowa_szkielet - losowa_duch) < minDist);
 
     // inicjowanie kaktusa niskiego
-    przeszkoda kaktus_1;
-    kaktus_1.tekstura = texKaktus;
-    kaktus_1.rodzaj_typu_przeszkody = 1;
-    kaktus_1.czy_dotyka_gracza = false;
-    kaktus_1.polozenie = {(float)losowa_kaktus, (float)wysokosc_okna - texKaktus.height * skalowanie_obrazu_kaktus + 60}; // nie mniejsze niz
-    Vector2 polozenie_startowe_kaktusa = kaktus_1.polozenie;
+    przeszkoda szkielet;
+    szkielet.tekstura = szkielet_tekstura;
+    szkielet.rodzaj_typu_przeszkody = 1;
+    szkielet.czy_dotyka_gracza = false;
+    szkielet.polozenie = {(float)losowa_szkielet, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 40};
+    Vector2 polozenie_startowe_kaktusa = szkielet.polozenie;
 
     // inicjowanie kaktusa wysokiego
-    przeszkoda kaktus_2;
-    kaktus_2.tekstura = texKaktus_wysoki;
-    kaktus_2.rodzaj_typu_przeszkody = 2;
-    kaktus_2.czy_dotyka_gracza = false;
-    kaktus_2.polozenie = {(float)losowa_kaktus_wysoki, (float)wysokosc_okna - texKaktus_wysoki.height * skalowanie_obrazu_kaktus_wysoki + 32};
-    Vector2 polozenie_startowe_kaktusa_2 = kaktus_2.polozenie;
+    przeszkoda duch;
+    duch.tekstura = duch_tekstura;
+    duch.rodzaj_typu_przeszkody = 2;
+    duch.czy_dotyka_gracza = false;
+    duch.polozenie = {(float)losowa_duch, (float)pozycjay_wysoki(gen)};
+    Vector2 polozenie_startowe_kaktusa_2 = duch.polozenie;
 
     int distance = 0; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss
 
@@ -205,7 +230,7 @@ int main()
 
     // wartości dla postaci
     float polozenie_gracza_x = 20;
-    float polozenie_gracza_y = GetScreenHeight() - tekstura_gracza.height * skalowanie_obrazu_gracza; // ustawianie go na dole
+    float polozenie_gracza_y = GetScreenHeight() - tekstura_gracza_1.height * skalowanie_obrazu_gracza - 60; // ustawianie go na dole
     float ziemiaY = polozenie_gracza_y;
 
     Vector2 polozenie_gracza = {polozenie_gracza_x, polozenie_gracza_y}; // inicjowanie vektora 2 wymiarowego
@@ -220,15 +245,29 @@ int main()
 
     // tworzenie hit boxów
 
-    Rectangle Hit_box_gracza = {polozenie_gracza.x + 10 * skalowanie_obrazu_gracza, polozenie_gracza.y + 5 * skalowanie_obrazu_gracza, tekstura_gracza.width * skalowanie_obrazu_gracza, tekstura_gracza.height * skalowanie_obrazu_gracza};
-    Rectangle Hit_box_gracza_w_skoku = {polozenie_gracza.x + 10 * skalowanie_obrazu_gracza, polozenie_gracza.y + 5 * skalowanie_obrazu_gracza, tekstura_gracza.width * skalowanie_obrazu_gracza - 25, tekstura_gracza.height * skalowanie_obrazu_gracza};
-    Rectangle Hit_box_kaktusa = {kaktus_1.polozenie.x + 30, kaktus_1.polozenie.y + 48, kaktus_1.tekstura.width * skalowanie_obrazu_kaktus - 52, kaktus_1.tekstura.height * skalowanie_obrazu_kaktus - 50};
-    Rectangle Hit_box_kaktusa_wysokiego = {kaktus_2.polozenie.x + 30, kaktus_2.polozenie.y + 48, kaktus_2.tekstura.width * skalowanie_obrazu_kaktus_wysoki - 70, kaktus_2.tekstura.height * skalowanie_obrazu_kaktus_wysoki - 50};
+    Rectangle Hit_box_gracza = {polozenie_gracza.x + 520 * skalowanie_obrazu_gracza, polozenie_gracza.y + 100 * skalowanie_obrazu_gracza, tekstura_gracza_1.width * skalowanie_obrazu_gracza - 250, tekstura_gracza_1.height * skalowanie_obrazu_gracza - 50};
+    Rectangle Hit_box_gracza_w_skoku = {polozenie_gracza.x + 350 * skalowanie_obrazu_gracza, polozenie_gracza.y - 10, tekstura_gracza_1.width * skalowanie_obrazu_gracza - 230, tekstura_gracza_1.height * skalowanie_obrazu_gracza - 100};
+    Rectangle Hit_box_gracza_slizg = {polozenie_gracza.x + 150 * skalowanie_obrazu_gracza, polozenie_gracza.y + 600 * skalowanie_obrazu_gracza, slizg.width * skalowanie_obrazu_gracza - 100, slizg.height * skalowanie_obrazu_gracza - 140};
+
+    Rectangle Hit_box_szkieleta = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 360, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
+    Rectangle Hit_box_szkieleta_nogi = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 320, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
+
+    Rectangle Hit_box_ducha_1 = {duch.polozenie.x + 30, offsetYducha_1, duch.tekstura.height * skalowanie_obrazu_duch , duch.tekstura.width * skalowanie_obrazu_duch -60};
+    Rectangle Hit_box_ducha_2 = {offsetXducha_2, offsetYducha_2, duch.tekstura.height * skalowanie_obrazu_duch + 30, duch.tekstura.width * skalowanie_obrazu_duch -35};
+    Rectangle Hit_box_ducha_3 = {offsetXducha_3, offsetYducha_3, duch.tekstura.height * skalowanie_obrazu_duch + 140, duch.tekstura.width * skalowanie_obrazu_duch - 25};
+    Rectangle Hit_box_ducha_4 = {offsetXducha_4, offsetYducha_4, duch.tekstura.height * skalowanie_obrazu_duch + 70, duch.tekstura.width * skalowanie_obrazu_duch  - 25};
+
+    // potrzebne zeby sie nie ruszal po smierci
+    bool IsDead = false;
 
     // zapisywanie poczatkowych polozeni do resetu po skuciu
     Vector2 Polozenie_poczatkowe_hitbox_gracza = {Hit_box_gracza.x, Hit_box_gracza.y};
-    Vector2 Polozenie_poczatkowe_hitbox_kaktusa = {Hit_box_kaktusa.x, Hit_box_kaktusa.y};
-    Vector2 Polozenie_poczatkowe_hitbox_kaktusa_wysokiego = {Hit_box_kaktusa_wysokiego.x, Hit_box_kaktusa_wysokiego.y};
+    Vector2 Polozenie_poczatkowe_hitbox_gracza_w_skoku = {Hit_box_gracza_w_skoku.x, Hit_box_gracza_w_skoku.y};
+    Vector2 Polozenie_poczatkowe_hitbox_kaktusa = {Hit_box_szkieleta.x, Hit_box_szkieleta.y};
+    Vector2 Polozenie_poczatkowe_hitbox_ducha_1 = {Hit_box_ducha_1.x, Hit_box_ducha_1.y};
+    Vector2 Polozenie_poczatkowe_hitbox_ducha_2 = {Hit_box_ducha_2.x, Hit_box_ducha_2.y};
+    Vector2 Polozenie_poczatkowe_hitbox_ducha_3 = {Hit_box_ducha_3.x, Hit_box_ducha_3.y};
+    Vector2 Polozenie_poczatkowe_hitbox_ducha_4 = {Hit_box_ducha_4.x, Hit_box_ducha_4.y};
 
     //--- PRZYCISKI DLA MENU I PAUZY
     // przyciski menu glownego
@@ -270,20 +309,52 @@ int main()
                 charCount--;
                 nickname[charCount] = '\0';
             }
+            IsDead = false;
         }
         else if (aktualnyStan == LEVELONE)
         // --- KOD GRY ---
         {
+            animacja++;
             distance++;
             // przechodzimy do pauzy gdy kliknie ktos escape
             if (IsKeyPressed(KEY_ESCAPE))
                 aktualnyStan = PAUZA;
 
             // --- LOGIKA GRY ---
+            if (czas_skoku == 0)
+            {
+                if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                {
+                    if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_2)|| CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_3)|| CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_4))
+                    {
+                        aktualnyStan = GameOver;
+                        IsDead = true;
+                    }
+                }
+                else
+                {
+
+                    if (CheckCollisionRecs(Hit_box_gracza, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_1)|| CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_2)|| CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_3)|| CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_4))
+                    {
+                        aktualnyStan = GameOver;
+                        IsDead = true;
+                    }
+                }
+            }
+            else
+            {
+                if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_2)|| CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_3)|| CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_4))
+                {
+                    aktualnyStan = GameOver;
+                    IsDead = true;
+                }
+            }
 
             // poruszanie sie
             float dt = GetFrameTime();
 
+
+            // skakanie
             if (IsKeyDown(KEY_SPACE) && czas_skoku <= 0 || IsKeyDown(KEY_W) && czas_skoku <= 0 || IsKeyDown(KEY_UP) && czas_skoku <= 0)
             {
                 czas_skoku = 0.001f; // zaczynamy skok
@@ -294,16 +365,15 @@ int main()
                 float t = czas_skoku / max_czas_skoku;
                 float parabola = 6.0f * t * (1.0f - t);
                 polozenie_gracza.y = ziemiaY - wysokosc_skoku * parabola;
-                Hit_box_gracza.y = ziemiaY - wysokosc_skoku * parabola;
-                Hit_box_gracza_w_skoku.y = ziemiaY - wysokosc_skoku * parabola;
+                Hit_box_gracza_w_skoku.y = polozenie_gracza.y - 10;
                 czas_skoku += dt; // dodajemy czas, ktory uplynal (GetFrameTime)
 
                 if (czas_skoku >= max_czas_skoku)
                 {
                     czas_skoku = 0;               // koniec skoku
                     polozenie_gracza.y = ziemiaY; // upewniamy sie ze postac stoi na ziemi
-                    Hit_box_gracza.y = ziemiaY;
-                    Hit_box_gracza_w_skoku.y = ziemiaY - wysokosc_skoku * parabola;
+                    Hit_box_gracza.y = Polozenie_poczatkowe_hitbox_gracza.y;
+                    Hit_box_gracza_w_skoku.y = Polozenie_poczatkowe_hitbox_gracza_w_skoku.y;
                 }
             }
 
@@ -315,59 +385,64 @@ int main()
 
             float game_speed = 5 + log(1 + distance / 300); // zwiekszanie sie game speedu logarytmicznie zeby nie zaszybko sie zmieniało w predkosc swiatla
 
-            kaktus_1.polozenie.x -= game_speed; // przyspieszanie przeszkody w zaleznosci od game speedu
-            Hit_box_kaktusa.x -= game_speed;
+            //latanie ducha 
+            duch.polozenie.y += 2*sin(distance/20);
+            Hit_box_ducha_1.y += 2*sin(distance/20);
+            Hit_box_ducha_2.y += 2*sin(distance/20);
+            Hit_box_ducha_3.y += 2*sin(distance/20);
+            Hit_box_ducha_4.y += 2*sin(distance/20);
 
-            kaktus_2.polozenie.x -= game_speed;
-            Hit_box_kaktusa_wysokiego.x -= game_speed;
+            szkielet.polozenie.x -= game_speed; // przyspieszanie przeszkody w zaleznosci od game speedu
+            Hit_box_szkieleta.x -= game_speed;
+
+            duch.polozenie.x -= game_speed;
+            Hit_box_ducha_1.x -= game_speed;
+            Hit_box_ducha_2.x -= game_speed;
+            Hit_box_ducha_3.x -= game_speed;
+            Hit_box_ducha_4.x -= game_speed;
 
             rozstrzal_przy_losowaniu += game_speed / 100;
             minDist += game_speed / 100;
 
-            uniform_int_distribution<int> pozycjaX(szerokosc_okna + texKaktus.width * skalowanie_obrazu_kaktus, rozstrzal_przy_losowaniu);
-            uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + texKaktus_wysoki.width * skalowanie_obrazu_kaktus_wysoki, rozstrzal_przy_losowaniu);
+            uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
+            uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
 
             // upewnianie sie ze nie wygeneruja sie zablisko
-            if (kaktus_1.polozenie.x < -texKaktus.width * skalowanie_obrazu_kaktus)
+            if (szkielet.polozenie.x < -szkielet_tekstura.width * skalowanie_obrazu_szkieleta)
             {
                 int x;
                 do
                 {
                     x = pozycjaX(gen);
-                } while (abs(x - (int)kaktus_2.polozenie.x) < minDist);
+                } while (abs(x - (int)duch.polozenie.x) < minDist);
 
-                kaktus_1.polozenie.x = (float)x;
-                Hit_box_kaktusa.x = kaktus_1.polozenie.x + 30;
+                szkielet.polozenie.x = (float)x;
+                Hit_box_szkieleta.x = szkielet.polozenie.x + 30;
             }
 
-            if (kaktus_2.polozenie.x < -texKaktus_wysoki.width * skalowanie_obrazu_kaktus)
+            if (duch.polozenie.x < -duch_tekstura.width * skalowanie_obrazu_szkieleta)
             {
                 int x;
                 do
                 {
                     x = pozycjaX_wysoki(gen);
-                } while (abs(x - (int)kaktus_1.polozenie.x) < minDist);
+                } while (abs(x - (int)szkielet.polozenie.x) < minDist);
 
-                kaktus_2.polozenie.x = (float)x;
-                Hit_box_kaktusa_wysokiego.x = kaktus_2.polozenie.x + 30;
+                duch.polozenie.x = (float)x;
+                Hit_box_ducha_1.x = duch.polozenie.x + 30;
+                Hit_box_ducha_2.x = offsetXducha_2;
+                Hit_box_ducha_3.x = offsetXducha_3;
+                Hit_box_ducha_4.x = offsetXducha_4;
+                
+                duch.polozenie.y = pozycjay_wysoki(gen);
+
+                Hit_box_ducha_1.y =  offsetYducha_1 ;
+                Hit_box_ducha_2.y =  offsetYducha_2 ;
+                Hit_box_ducha_3.y =  offsetYducha_3 ;
+                Hit_box_ducha_4.y =  offsetYducha_4 ;
             }
 
             max_czas_skoku -= log(2 + distance / 1000) / 100000; // w teori powinno uniknąc to problemów przy zaduzej predkosci przeszkud ale moze to usune potem
-
-            if (czas_skoku == 0)
-            {
-                if (CheckCollisionRecs(Hit_box_gracza, Hit_box_kaktusa) || CheckCollisionRecs(Hit_box_gracza, Hit_box_kaktusa_wysokiego))
-                {
-                    aktualnyStan = GameOver;
-                }
-            }
-            else 
-            {
-                if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_kaktusa) || CheckCollisionRecs(Hit_box_gracza, Hit_box_kaktusa_wysokiego))
-                {
-                    aktualnyStan = GameOver;
-                }
-            }
         }
         else if (aktualnyStan == PAUZA)
         {
@@ -389,20 +464,35 @@ int main()
         }
         else if (aktualnyStan == GameOver)
         {
-            animacja ++;
+            animacja++;
             if (CzyKliknietoPrzycisk(btnPowrotMenu))
             {
-                
+
                 UpdateTop10(nickname, distance);
                 distance = 0;
-                kaktus_1.polozenie = polozenie_startowe_kaktusa;
-                Hit_box_kaktusa.x = Polozenie_poczatkowe_hitbox_kaktusa.x;
+                szkielet.polozenie = polozenie_startowe_kaktusa;
+                Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_kaktusa.x;
 
-                kaktus_2.polozenie = polozenie_startowe_kaktusa_2;
-                Hit_box_kaktusa_wysokiego.x = Polozenie_poczatkowe_hitbox_kaktusa_wysokiego.x;
+                duch.polozenie = polozenie_startowe_kaktusa_2;
+                Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
+                Hit_box_ducha_1.y = Polozenie_poczatkowe_hitbox_ducha_1.y;
+
+                Hit_box_ducha_2.x = Polozenie_poczatkowe_hitbox_ducha_2.x;
+                Hit_box_ducha_2.y = Polozenie_poczatkowe_hitbox_ducha_2.y;
+
+                Hit_box_ducha_3.x = Polozenie_poczatkowe_hitbox_ducha_3.x;
+                Hit_box_ducha_3.y = Polozenie_poczatkowe_hitbox_ducha_3.y;
+
+                Hit_box_ducha_4.x = Polozenie_poczatkowe_hitbox_ducha_4.x;
+                Hit_box_ducha_4.y = Polozenie_poczatkowe_hitbox_ducha_4.y;
+
 
                 polozenie_gracza.y = ziemiaY;
                 Hit_box_gracza.y = Polozenie_poczatkowe_hitbox_gracza.y;
+
+
+
+                max_czas_skoku = 1.0f;
                 aktualnyStan = MENU;
             }
             if (CzyKliknietoPrzycisk(btnPauzaExit))
@@ -427,16 +517,16 @@ int main()
         if (aktualnyStan == MENU)
         {
 
-            // rysujemy tlo menu
-            DrawTextureEx(background, {0, 0}, 0.0f, skalowanie_obrazu_tla, WHITE);
-            // rysujemy na tle gry zeby przyciemnic
+            // // rysujemy tlo menu
+            DrawTextureEx(background_menu, {0, 0}, 0.0f, skalowanie_obrazu_tla_menu, WHITE);
+            // // rysujemy na tle gry zeby przyciemnic
             DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.3f));
 
             // napis w menu
-            DrawText("TYTUL GRY", szerokosc_okna / 2 - 150, 100, 40, DARKGRAY);
+            // DrawText("TYTUL GRY", szerokosc_okna / 2 - 150, 100, 40, DARKGRAY);
 
             // Pole na wpisywanie nicku
-            DrawText("WPISZ SWOJ NICK: ", szerokosc_okna / 2 - 100, 200, 20, DARKGRAY);
+            // DrawText("WPISZ SWOJ NICK: ", szerokosc_okna / 2 - 100, 200, 20, DARKGRAY);
             DrawRectangle(szerokosc_okna / 2 - 105, 230, 210, 40, LIGHTGRAY); // pole tekstowe
             DrawText(nickname, szerokosc_okna / 2 - 100, 240, 20, BLACK);
 
@@ -453,11 +543,11 @@ int main()
             int d;
             int yOffset = 0;
 
-            DrawText("TABELA TOP 10: ", 50, 50, 20, GOLD);
+            // DrawText("TABELA TOP 10: ", 50, 50, 20, GOLD);
 
             while (plikPokaz >> n >> d && yOffset < 10)
             {
-                DrawText(TextFormat("%d. %s - %d", yOffset + 1, n.c_str(), d), 50, 80 + (yOffset * 25), 18, DARKGRAY);
+                DrawText(TextFormat("%d. %s - %d", yOffset + 1, n.c_str(), d), 50, 120 + (yOffset * 25), 18, DARKGRAY);
                 yOffset++;
             }
             plikPokaz.close();
@@ -467,31 +557,88 @@ int main()
 
             for (float x = scrollingBack; x < szerokosc_okna; x += szerokosc_tla_przeskalowana)
             {
-                DrawTextureEx(background, {x, 0}, 0.0f, skalowanie_obrazu_tla, WHITE);
+                DrawTextureEx(background, {x, -200}, 0.0f, skalowanie_obrazu_tla, WHITE);
             }
 
+            // rysowanie hit box do debugowania i dostoswywania
             // if (czas_skoku == 0)
             // {
-            //     rysowanie_hit_box(Hit_box_gracza, RED);
+            //     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+            //     {
+            //         rysowanie_hit_box(Hit_box_gracza_slizg, RED);
+            //     }
+            //     else
+            //         rysowanie_hit_box(Hit_box_gracza, RED);
             // }
             // else
             // {
             //     rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
             // }
-            // rysowanie_hit_box(Hit_box_kaktusa, GREEN);
-            // rysowanie_hit_box(Hit_box_kaktusa_wysokiego, GREEN);
-            //
-            //istotne prosze nie usuwać !!!!
 
-            DrawTextureEx(kaktus_2.tekstura, kaktus_2.polozenie, 0.25f, skalowanie_obrazu_kaktus, WHITE);
-            DrawTextureEx(kaktus_1.tekstura, kaktus_1.polozenie, 0.0f, skalowanie_obrazu_kaktus, WHITE); // rysowanie przeszkody w zdefiniowanej skali
-            if (czas_skoku == 0)
+            // rysowanie_hit_box(Hit_box_szkieleta, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_1, GREEN);
+            // rysowanie_hit_box(Hit_box_szkieleta_nogi, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_2, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_3, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_4, GREEN);
+            // istotne prosze nie usuwać !!!!
+
+
+            // animacja szkieleta
+            if (IsDead == false)
             {
-                DrawTextureEx(tekstura_gracza, polozenie_gracza, 0.0f, skalowanie_obrazu_gracza, WHITE);
-            }
-            else
-            {
-                DrawTextureEx(tekstura_skoku, {polozenie_gracza.x - 40, polozenie_gracza.y - 60}, 0.0f, skalowanie_obrazu_gracza_skoku, WHITE);
+                DrawTextureEx(duch.tekstura, duch.polozenie, 0.25f, skalowanie_obrazu_szkieleta, WHITE);
+
+                int frameCount = (animacja + 1) % 60;
+                if (frameCount <= 15)
+                {
+                    DrawTextureEx(szkielet_tekstura_2, szkielet.polozenie, 0.0f, skalowanie_obrazu_szkieleta, WHITE);
+                }
+                else if (frameCount <= 30)
+                {
+                    DrawTextureEx(szkielet_tekstura_3, szkielet.polozenie, 0.0f, skalowanie_obrazu_szkieleta, WHITE);
+                }
+                else if (frameCount <= 45)
+                {
+                    DrawTextureEx(szkielet_tekstura, szkielet.polozenie, 0.0f, skalowanie_obrazu_szkieleta * 0.7, WHITE);
+                }
+                else
+                {
+                    DrawTextureEx(szkielet_tekstura_3, szkielet.polozenie, 0.0f, skalowanie_obrazu_szkieleta, WHITE);
+                }
+
+                // rysowanie ryceza w roznych sytuacjach
+                if (czas_skoku == 0)
+                {
+                    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                    {
+                        DrawTextureEx(slizg, {polozenie_gracza.x, polozenie_gracza.y + 50}, 0.0f, skalowanie_obrazu_gracza, WHITE);
+                    }
+                    else
+                    {
+                        int frameCount = (animacja + 1) % 60;
+                        if (frameCount <= 15)
+                        {
+                            DrawTextureEx(tekstura_gracza_1, polozenie_gracza, 0.0f, skalowanie_obrazu_gracza, WHITE);
+                        }
+                        else if (frameCount <= 30)
+                        {
+                            DrawTextureEx(tekstura_gracza_3, polozenie_gracza, 0.0f, skalowanie_obrazu_gracza, WHITE);
+                        }
+                        else if (frameCount <= 45)
+                        {
+                            DrawTextureEx(tekstura_gracza_2, polozenie_gracza, 0.0f, skalowanie_obrazu_gracza, WHITE);
+                        }
+                        else
+                        {
+                            DrawTextureEx(tekstura_gracza_3, polozenie_gracza, 0.0f, skalowanie_obrazu_gracza, WHITE);
+                        }
+                    }
+                }
+                else
+                {
+                    DrawTextureEx(tekstura_skoku, {polozenie_gracza.x - 40, polozenie_gracza.y - 30}, 0.0f, skalowanie_obrazu_gracza_skoku, WHITE);
+                }
             }
 
             DrawText("POZIOM 1", 10, 10, 20, GRAY);
@@ -515,21 +662,20 @@ int main()
             {
 
                 DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.5f));
-                DrawText("GAME OVER", szerokosc_okna / 2 - 150, 200, 50, BLACK);
+                DrawText("GAME OVER", szerokosc_okna / 2 - 150, 200, 50, GRAY);
 
-                int frameCounter = (animacja + 1) %30;
+                int frameCounter = (animacja + 1) % 30;
 
                 if (frameCounter < 15)
                 {
-                    DrawTextureEx(czaszka, {szerokosc_okna/2 - 105, 420}, 0.0f, 0.2, GRAY);
+                    DrawTextureEx(czaszka, {szerokosc_okna / 2 - 105, 420}, 0.0f, 0.2, GRAY);
                 }
                 else
                 {
-                     DrawTextureEx(czaszka_2, {szerokosc_okna/2 - 105, 420}, 0.0f, 0.2, GRAY);
+                    DrawTextureEx(czaszka_2, {szerokosc_okna / 2 - 105, 420}, 0.0f, 0.2, GRAY);
                 }
-                
-                
-                DrawText(TextFormat("KONCOWY DYSTANS: %05d", distance), szerokosc_okna / 2 - 300, 260, 50, BLACK);
+
+                DrawText(TextFormat("KONCOWY DYSTANS: %05d", distance), szerokosc_okna / 2 - 300, 260, 50, GRAY);
 
                 DrawRectangleRec(btnPowrotMenu, CzyMyszkaNadPrzyciskiem(btnPowrotMenu) ? kolor1btnMenu : kolor2btnMenu);
                 DrawText("MENU", btnPowrotMenu.x + 65, btnPowrotMenu.y + 15, 20, WHITE);
@@ -541,10 +687,20 @@ int main()
         EndDrawing();
     }
 
-    // zwalnianie pamieci
+    UnloadTexture(czaszka_2);
+    UnloadTexture(czaszka);
+    UnloadTexture(slizg);
+    UnloadTexture(background_menu);
+    UnloadTexture(background_las);
+    UnloadTexture(tekstura_skoku);
     UnloadTexture(background);
-    UnloadTexture(tekstura_gracza);
-    UnloadTexture(texKaktus);
+    UnloadTexture(tekstura_gracza_1);
+    UnloadTexture(tekstura_gracza_2);
+    UnloadTexture(tekstura_gracza_3);
+    UnloadTexture(szkielet_tekstura);
+    UnloadTexture(szkielet_tekstura_2);
+    UnloadTexture(szkielet_tekstura_3);
+
     CloseWindow();
 
     return 0;
