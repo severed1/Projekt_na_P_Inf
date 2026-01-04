@@ -43,3 +43,7 @@
 # to powoduje ze plik gry nie bedzie przesyłany
 game 
 *.json
+
+# zeby sie nie commitowalo zkompilowany plik c++ 
+
+main
