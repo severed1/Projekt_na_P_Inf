@@ -25,3 +25,5 @@ Menu jest nie dopasowane bo musiałem je zmienić z powodu zmiany tła gry i nie
 Czasami gra może się zawieszać/nie odpowiedać popracuje nad tym jutro wszystko inne powinno być ok jak macie jakieś problemy do zgłoszenia to możecie też to robić na githubie w sekcji Issues
 
 pousuwałem stare grafiki ale jeśli z jakiegoś powodu będziecie ich potrzebowali to może je sciągnąć ze starych commitów 
+
+jak dla mnie to baza poziomu 1 jest już gotowa teraz trzebasię zabrać za 1 boss fight (mozna by lekko poprawić niektóre hit boxy ale mi się narazie nie chce)

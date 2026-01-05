@@ -23,21 +23,30 @@
 #define skalowanie_obrazu_duch 0.05f
 #define skalowanie_obrazu_tla 1.2 // 1.2 //3
 #define skalowanie_obrazu_tla_menu 0.84
+#define skalowanie_obrazu_szczura 0.2f
+#define skalowanie_obrazu_bat 0.14f
+
 // porusznie sie
 #define prendkosc 300.0f
 #define dlugosc_skoku 20 * 3
 #define wysokosc_skoku 60.0f * 3
 
-#define offsetYducha_1  (duch.polozenie.y + 40) 
+#define offsetYducha_1 (duch.polozenie.y + 40)
 
-#define offsetYducha_2  (duch.polozenie.y + 50)
-#define offsetXducha_2  (duch.polozenie.x + 80)
+#define offsetYducha_2 (duch.polozenie.y + 50)
+#define offsetXducha_2 (duch.polozenie.x + 80)
 
-#define offsetYducha_3  (duch.polozenie.y + 80)
-#define offsetXducha_3  (duch.polozenie.x + 140)
+#define offsetYducha_3 (duch.polozenie.y + 80)
+#define offsetXducha_3 (duch.polozenie.x + 140)
 
-#define offsetYducha_4  (duch.polozenie.y + 120)
-#define offsetXducha_4  (duch.polozenie.x + 210)
+#define offsetYducha_4 (duch.polozenie.y + 120)
+#define offsetXducha_4 (duch.polozenie.x + 210)
+
+#define offsetYszczura (szczur.polozenie.y + 60)
+#define offsetXszczura (szczur.polozenie.x + 70)
+
+#define offsetYbat (bat.polozenie.y + 45)
+#define offsetXbat (bat.polozenie.x + 70)
 
 using namespace std;
 
@@ -150,6 +159,56 @@ void rysowanie_hit_box(Rectangle hitbox, Color kolor)
         kolor);
 }
 
+bool TooClose(int x, float otherX, int minDist)
+{
+    return std::abs(x - (int)otherX) < minDist;
+}
+
+static inline bool TooCloseX(int x, float otherX, int minDist)
+{
+    return std::abs(x - (int)otherX) < minDist;
+}
+
+static inline bool TooCloseForSzkielet(int x, int minDist,
+                                       const Vector2 &duchPos,
+                                       const Vector2 &batPos,
+                                       const Vector2 &szczurPos)
+{
+    return TooCloseX(x, duchPos.x, minDist) ||
+           TooCloseX(x, batPos.x, minDist) ||
+           TooCloseX(x, szczurPos.x, minDist);
+}
+
+static inline bool TooCloseForDuch(int x, int minDist,
+                                   const Vector2 &szkieletPos,
+                                   const Vector2 &batPos,
+                                   const Vector2 &szczurPos)
+{
+    return TooCloseX(x, szkieletPos.x, minDist) ||
+           TooCloseX(x, batPos.x, minDist) ||
+           TooCloseX(x, szczurPos.x, minDist);
+}
+
+static inline bool TooCloseForBat(int x, int minDist,
+                                  const Vector2 &duchPos,
+                                  const Vector2 &szkieletPos,
+                                  const Vector2 &szczurPos)
+{
+    return TooCloseX(x, duchPos.x, minDist) ||
+           TooCloseX(x, szkieletPos.x, minDist) ||
+           TooCloseX(x, szczurPos.x, minDist);
+}
+
+static inline bool TooCloseForSzczur(int x, int minDist,
+                                     const Vector2 &duchPos,
+                                     const Vector2 &szkieletPos,
+                                     const Vector2 &batPos)
+{
+    return TooCloseX(x, duchPos.x, minDist) ||
+           TooCloseX(x, szkieletPos.x, minDist) ||
+           TooCloseX(x, batPos.x, minDist);
+}
+
 int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarach
@@ -183,27 +242,36 @@ int main()
 
     Texture2D background_las = LoadTexture("assets/backgournd/las.png");
 
+    Texture2D szczur_tekstura = LoadTexture("assets/przeszkody/szczur.png");
+
+    Texture2D bat_tekstura = LoadTexture("assets/przeszkody/bat.png");
+    Texture2D bat_tekstura_2 = LoadTexture("assets/przeszkody/bat_2.png");
+    Texture2D bat_tekstura_3 = LoadTexture("assets/przeszkody/bat_3.png");
+
     int animacja = 0; // nie istotne uzyte do próby animacji
     // generowanie losowej pozycji dla kaktusow
 
-
-    float rozstrzal_przy_losowaniu = 3000;
+    float rozstrzal_przy_losowaniu = 14000;
+    float rozstrzal_przy_losowaniu_czestych = 6000;
     uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
     uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
-    uniform_int_distribution<int> pozycjay_wysoki(300,  (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 40);
-
-    
+    uniform_int_distribution<int> pozycjay_wysoki(300, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 40);
+    uniform_int_distribution<int> pozycja_czenste(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu_czestych);
 
     // upewnianie sie ze nie wygeneruja sie zablisko
-    float minDist = szkielet_tekstura.width * skalowanie_obrazu_szkieleta + tekstura_gracza_1.width * skalowanie_obrazu_gracza + duch_tekstura.width * skalowanie_obrazu_duch;
+    float minDist = 600;
 
     int losowa_szkielet;
     int losowa_duch;
+    int losowa_szczura;
+    int losowa_bat;
     do
     {
+        losowa_bat = pozycja_czenste(gen);
+        losowa_szczura = pozycja_czenste(gen);
         losowa_szkielet = pozycjaX(gen);
         losowa_duch = pozycjaX_wysoki(gen);
-    } while (abs(losowa_szkielet - losowa_duch) < minDist);
+    } while (abs(losowa_szkielet - losowa_duch) < minDist || abs(losowa_szkielet - losowa_szczura) < minDist || abs(losowa_szkielet - losowa_bat) < minDist || abs(losowa_bat - losowa_szczura) < minDist || abs(losowa_duch - losowa_bat) < minDist || abs(losowa_duch - losowa_szczura) < minDist);
 
     // inicjowanie kaktusa niskiego
     przeszkoda szkielet;
@@ -211,7 +279,7 @@ int main()
     szkielet.rodzaj_typu_przeszkody = 1;
     szkielet.czy_dotyka_gracza = false;
     szkielet.polozenie = {(float)losowa_szkielet, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 40};
-    Vector2 polozenie_startowe_kaktusa = szkielet.polozenie;
+    Vector2 polozenie_startowe_szkieleta = szkielet.polozenie;
 
     // inicjowanie kaktusa wysokiego
     przeszkoda duch;
@@ -219,7 +287,19 @@ int main()
     duch.rodzaj_typu_przeszkody = 2;
     duch.czy_dotyka_gracza = false;
     duch.polozenie = {(float)losowa_duch, (float)pozycjay_wysoki(gen)};
-    Vector2 polozenie_startowe_kaktusa_2 = duch.polozenie;
+    Vector2 polozenie_startowe_ducha = duch.polozenie;
+
+    przeszkoda szczur;
+    szczur.tekstura = szczur_tekstura;
+    szczur.rodzaj_typu_przeszkody = 3;
+    szczur.polozenie = {(float)pozycja_czenste(gen), (float)wysokosc_okna - szczur_tekstura.height * skalowanie_obrazu_szczura};
+    Vector2 polozenie_startowe_szczura = szczur.polozenie;
+
+    przeszkoda bat;
+    bat.tekstura = bat_tekstura;
+    bat.rodzaj_typu_przeszkody = 4;
+    bat.polozenie = {(float)pozycja_czenste(gen), (float)pozycjay_wysoki(gen)};
+    Vector2 polozenie_startowe_bat = bat.polozenie;
 
     int distance = 0; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss
 
@@ -252,10 +332,14 @@ int main()
     Rectangle Hit_box_szkieleta = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 360, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
     Rectangle Hit_box_szkieleta_nogi = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 320, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
 
-    Rectangle Hit_box_ducha_1 = {duch.polozenie.x + 30, offsetYducha_1, duch.tekstura.height * skalowanie_obrazu_duch , duch.tekstura.width * skalowanie_obrazu_duch -60};
-    Rectangle Hit_box_ducha_2 = {offsetXducha_2, offsetYducha_2, duch.tekstura.height * skalowanie_obrazu_duch + 30, duch.tekstura.width * skalowanie_obrazu_duch -35};
+    Rectangle Hit_box_ducha_1 = {duch.polozenie.x + 30, offsetYducha_1, duch.tekstura.height * skalowanie_obrazu_duch, duch.tekstura.width * skalowanie_obrazu_duch - 60};
+    Rectangle Hit_box_ducha_2 = {offsetXducha_2, offsetYducha_2, duch.tekstura.height * skalowanie_obrazu_duch + 30, duch.tekstura.width * skalowanie_obrazu_duch - 35};
     Rectangle Hit_box_ducha_3 = {offsetXducha_3, offsetYducha_3, duch.tekstura.height * skalowanie_obrazu_duch + 140, duch.tekstura.width * skalowanie_obrazu_duch - 25};
-    Rectangle Hit_box_ducha_4 = {offsetXducha_4, offsetYducha_4, duch.tekstura.height * skalowanie_obrazu_duch + 70, duch.tekstura.width * skalowanie_obrazu_duch  - 25};
+    Rectangle Hit_box_ducha_4 = {offsetXducha_4, offsetYducha_4, duch.tekstura.height * skalowanie_obrazu_duch + 70, duch.tekstura.width * skalowanie_obrazu_duch - 25};
+
+    Rectangle Hit_box_bat = {offsetXbat, offsetYbat, bat.tekstura.width*skalowanie_obrazu_duch  , bat.tekstura.height*skalowanie_obrazu_duch };
+
+    Rectangle Hit_box_szczura = {offsetXszczura, offsetYszczura, szczur.tekstura.height * skalowanie_obrazu_szczura - 40 , (szczur.tekstura.width * skalowanie_obrazu_szczura) - 250 };
 
     // potrzebne zeby sie nie ruszal po smierci
     bool IsDead = false;
@@ -263,11 +347,14 @@ int main()
     // zapisywanie poczatkowych polozeni do resetu po skuciu
     Vector2 Polozenie_poczatkowe_hitbox_gracza = {Hit_box_gracza.x, Hit_box_gracza.y};
     Vector2 Polozenie_poczatkowe_hitbox_gracza_w_skoku = {Hit_box_gracza_w_skoku.x, Hit_box_gracza_w_skoku.y};
-    Vector2 Polozenie_poczatkowe_hitbox_kaktusa = {Hit_box_szkieleta.x, Hit_box_szkieleta.y};
+    Vector2 Polozenie_poczatkowe_hitbox_szkieleta = {Hit_box_szkieleta.x, Hit_box_szkieleta.y};
     Vector2 Polozenie_poczatkowe_hitbox_ducha_1 = {Hit_box_ducha_1.x, Hit_box_ducha_1.y};
     Vector2 Polozenie_poczatkowe_hitbox_ducha_2 = {Hit_box_ducha_2.x, Hit_box_ducha_2.y};
     Vector2 Polozenie_poczatkowe_hitbox_ducha_3 = {Hit_box_ducha_3.x, Hit_box_ducha_3.y};
     Vector2 Polozenie_poczatkowe_hitbox_ducha_4 = {Hit_box_ducha_4.x, Hit_box_ducha_4.y};
+
+    Vector2 Polozenie_poczatkowe_hitbox_bat = {Hit_box_bat.x, Hit_box_bat.y};
+    Vector2 Polozenie_poczatkowe_hitbox_szczura = {Hit_box_szczura.x, Hit_box_szczura.y};
 
     //--- PRZYCISKI DLA MENU I PAUZY
     // przyciski menu glownego
@@ -325,7 +412,7 @@ int main()
             {
                 if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                 {
-                    if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_2)|| CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_3)|| CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_4))
+                    if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_4))
                     {
                         aktualnyStan = GameOver;
                         IsDead = true;
@@ -334,7 +421,7 @@ int main()
                 else
                 {
 
-                    if (CheckCollisionRecs(Hit_box_gracza, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_1)|| CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_2)|| CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_3)|| CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_4))
+                    if (CheckCollisionRecs(Hit_box_gracza, Hit_box_szkieleta) ||CheckCollisionRecs(Hit_box_gracza, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_4))
                     {
                         aktualnyStan = GameOver;
                         IsDead = true;
@@ -343,16 +430,16 @@ int main()
             }
             else
             {
-                if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_2)|| CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_3)|| CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_4))
+                if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szkieleta) ||CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_4))
                 {
                     aktualnyStan = GameOver;
                     IsDead = true;
                 }
             }
 
+
             // poruszanie sie
             float dt = GetFrameTime();
-
 
             // skakanie
             if (IsKeyDown(KEY_SPACE) && czas_skoku <= 0 || IsKeyDown(KEY_W) && czas_skoku <= 0 || IsKeyDown(KEY_UP) && czas_skoku <= 0)
@@ -385,15 +472,21 @@ int main()
 
             float game_speed = 5 + log(1 + distance / 300); // zwiekszanie sie game speedu logarytmicznie zeby nie zaszybko sie zmieniało w predkosc swiatla
 
-            //latanie ducha 
-            duch.polozenie.y += 2*sin(distance/20);
-            Hit_box_ducha_1.y += 2*sin(distance/20);
-            Hit_box_ducha_2.y += 2*sin(distance/20);
-            Hit_box_ducha_3.y += 2*sin(distance/20);
-            Hit_box_ducha_4.y += 2*sin(distance/20);
+            // latanie ducha
+            duch.polozenie.y += 2 * sin(distance / 20);
+            Hit_box_ducha_1.y += 2 * sin(distance / 20);
+            Hit_box_ducha_2.y += 2 * sin(distance / 20);
+            Hit_box_ducha_3.y += 2 * sin(distance / 20);
+            Hit_box_ducha_4.y += 2 * sin(distance / 20);
 
             szkielet.polozenie.x -= game_speed; // przyspieszanie przeszkody w zaleznosci od game speedu
             Hit_box_szkieleta.x -= game_speed;
+
+            bat.polozenie.x -= game_speed;
+            Hit_box_bat.x -= game_speed;
+
+            szczur.polozenie.x -= game_speed;
+            Hit_box_szczura.x -= game_speed;
 
             duch.polozenie.x -= game_speed;
             Hit_box_ducha_1.x -= game_speed;
@@ -403,6 +496,8 @@ int main()
 
             rozstrzal_przy_losowaniu += game_speed / 100;
             minDist += game_speed / 100;
+
+            scrollSpeed += game_speed/200;
 
             uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
             uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
@@ -414,7 +509,7 @@ int main()
                 do
                 {
                     x = pozycjaX(gen);
-                } while (abs(x - (int)duch.polozenie.x) < minDist);
+                } while (TooCloseForSzkielet(x, minDist, duch.polozenie, bat.polozenie, szczur.polozenie));
 
                 szkielet.polozenie.x = (float)x;
                 Hit_box_szkieleta.x = szkielet.polozenie.x + 30;
@@ -426,20 +521,51 @@ int main()
                 do
                 {
                     x = pozycjaX_wysoki(gen);
-                } while (abs(x - (int)szkielet.polozenie.x) < minDist);
+                } while (TooCloseForDuch(x, minDist, szkielet.polozenie, bat.polozenie, szczur.polozenie));
 
                 duch.polozenie.x = (float)x;
+
                 Hit_box_ducha_1.x = duch.polozenie.x + 30;
                 Hit_box_ducha_2.x = offsetXducha_2;
                 Hit_box_ducha_3.x = offsetXducha_3;
                 Hit_box_ducha_4.x = offsetXducha_4;
-                
+
                 duch.polozenie.y = pozycjay_wysoki(gen);
 
-                Hit_box_ducha_1.y =  offsetYducha_1 ;
-                Hit_box_ducha_2.y =  offsetYducha_2 ;
-                Hit_box_ducha_3.y =  offsetYducha_3 ;
-                Hit_box_ducha_4.y =  offsetYducha_4 ;
+                Hit_box_ducha_1.y = offsetYducha_1;
+                Hit_box_ducha_2.y = offsetYducha_2;
+                Hit_box_ducha_3.y = offsetYducha_3;
+                Hit_box_ducha_4.y = offsetYducha_4;
+            }
+
+            if (bat.polozenie.x < -bat_tekstura.width * skalowanie_obrazu_bat)
+            {
+                int x;
+                do
+                {
+                    x = pozycja_czenste(gen); 
+                } while (TooCloseForBat(x, minDist, duch.polozenie, szkielet.polozenie, szczur.polozenie));
+
+                bat.polozenie.x = (float)x;
+
+                Hit_box_bat.x = offsetXbat;
+
+                bat.polozenie.y = pozycjay_wysoki(gen);
+
+                Hit_box_bat.y = offsetYbat;
+            }
+            if (szczur.polozenie.x < -szczur_tekstura.width * skalowanie_obrazu_szczura)
+            {
+                int x;
+                do
+                {
+                    x = pozycjaX(gen);
+                } while (TooCloseForSzczur(x, minDist, duch.polozenie, szkielet.polozenie, bat.polozenie));
+
+                szczur.polozenie.x = (float)x;
+
+                Hit_box_szczura.x = offsetXszczura; // dopasuj offset
+                Hit_box_szczura.y = offsetYszczura;
             }
 
             max_czas_skoku -= log(2 + distance / 1000) / 100000; // w teori powinno uniknąc to problemów przy zaduzej predkosci przeszkud ale moze to usune potem
@@ -470,10 +596,11 @@ int main()
 
                 UpdateTop10(nickname, distance);
                 distance = 0;
-                szkielet.polozenie = polozenie_startowe_kaktusa;
-                Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_kaktusa.x;
+                szkielet.polozenie = polozenie_startowe_szkieleta;
+                Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_szkieleta.x;
 
-                duch.polozenie = polozenie_startowe_kaktusa_2;
+
+                duch.polozenie = polozenie_startowe_ducha;
                 Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
                 Hit_box_ducha_1.y = Polozenie_poczatkowe_hitbox_ducha_1.y;
 
@@ -486,11 +613,16 @@ int main()
                 Hit_box_ducha_4.x = Polozenie_poczatkowe_hitbox_ducha_4.x;
                 Hit_box_ducha_4.y = Polozenie_poczatkowe_hitbox_ducha_4.y;
 
-
                 polozenie_gracza.y = ziemiaY;
                 Hit_box_gracza.y = Polozenie_poczatkowe_hitbox_gracza.y;
 
+                bat.polozenie = polozenie_startowe_bat;
+                Hit_box_bat.x = Polozenie_poczatkowe_hitbox_bat.x;
+                Hit_box_bat.y = Polozenie_poczatkowe_hitbox_bat.y;
 
+                szczur.polozenie = polozenie_startowe_szczura;
+                Hit_box_szczura.x = Polozenie_poczatkowe_hitbox_szczura.x;
+                Hit_box_szczura.y = Polozenie_poczatkowe_hitbox_szczura.y;
 
                 max_czas_skoku = 1.0f;
                 aktualnyStan = MENU;
@@ -577,19 +709,59 @@ int main()
 
             // rysowanie_hit_box(Hit_box_szkieleta, GREEN);
             // rysowanie_hit_box(Hit_box_ducha_1, GREEN);
-            // rysowanie_hit_box(Hit_box_szkieleta_nogi, GREEN);
+           
             // rysowanie_hit_box(Hit_box_ducha_2, GREEN);
             // rysowanie_hit_box(Hit_box_ducha_3, GREEN);
             // rysowanie_hit_box(Hit_box_ducha_4, GREEN);
-            // istotne prosze nie usuwać !!!!
 
+            // rysowanie_hit_box(Hit_box_bat, GREEN);
+
+            // rysowanie_hit_box(Hit_box_szczura, GREEN);
+            // istotne prosze nie usuwać !!!!
 
             // animacja szkieleta
             if (IsDead == false)
             {
+                
                 DrawTextureEx(duch.tekstura, duch.polozenie, 0.25f, skalowanie_obrazu_szkieleta, WHITE);
-
+                
+                // rysowanie nietobeza i szczura
                 int frameCount = (animacja + 1) % 60;
+
+                if (frameCount <= 15)
+                {
+                    DrawTextureEx(szczur_tekstura, szczur.polozenie, 0.0f, skalowanie_obrazu_szczura, WHITE);
+                }
+                else if (frameCount <= 30)
+                {
+                    DrawTextureEx(szczur_tekstura, szczur.polozenie, 0.0f, skalowanie_obrazu_szczura * 0.9, WHITE);
+                }
+                else if (frameCount <= 45)
+                {
+                    DrawTextureEx(szczur_tekstura, szczur.polozenie, 0.0f, skalowanie_obrazu_szczura * 0.85, WHITE);
+                }
+                else
+                {
+                    DrawTextureEx(szczur_tekstura, szczur.polozenie, 0.0f, skalowanie_obrazu_szczura * 0.9, WHITE);
+                }
+
+                if (frameCount <= 15)
+                {
+                    DrawTextureEx(bat_tekstura, bat.polozenie, 0.0f, skalowanie_obrazu_bat, WHITE);
+                }
+                else if (frameCount <= 30)
+                {
+                    DrawTextureEx(bat_tekstura_2, bat.polozenie, 0.0f, skalowanie_obrazu_bat, WHITE);
+                }
+                else if (frameCount <= 45)
+                {
+                    DrawTextureEx(bat_tekstura, bat.polozenie, 0.0f, skalowanie_obrazu_bat, WHITE);
+                }
+                else
+                {
+                    DrawTextureEx(bat_tekstura_3, bat.polozenie, 0.0f, skalowanie_obrazu_bat, WHITE);
+                }
+
                 if (frameCount <= 15)
                 {
                     DrawTextureEx(szkielet_tekstura_2, szkielet.polozenie, 0.0f, skalowanie_obrazu_szkieleta, WHITE);
