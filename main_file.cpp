@@ -1,3 +1,5 @@
+// kompilacja
+// g++ main_file.cpp -o gra.exe -I C:/raylib/include -L C:/raylib/lib -lraylib -lopengl32 -lgdi32 -lwinmm
 
 // biblioteki
 #include <iostream>
@@ -281,6 +283,12 @@ int main()
 
     Texture2D fireball = LoadTexture("assets/Boss/fireball.png");
 
+    // tekstury przycisków
+    Texture2D startText = LoadTexture("assets/przyciski/start.png");
+    Texture2D menuText = LoadTexture("assets/przyciski/menu.png");
+    Texture2D exitText = LoadTexture("assets/przyciski/exit.png");
+    Texture2D wznowText = LoadTexture("assets/przyciski/wznow.png");
+
     int animacja = 0; // nie istotne uzyte do próby animacji
     // generowanie losowej pozycji dla kaktusow
 
@@ -428,8 +436,8 @@ int main()
 
     //--- PRZYCISKI DLA MENU I PAUZY
     // przyciski menu glownego
-    Rectangle btnStart = {szerokosc_okna / 2.0f - 100, 300, 200, 50};
-    Rectangle btnExit = {szerokosc_okna / 2.0f - 100, 370, 200, 50};
+    Rectangle btnStart = {szerokosc_okna / 2.0f - 155, wysokosc_okna - 195, 320, 90};
+    Rectangle btnExit = {szerokosc_okna / 2.0f - 155, wysokosc_okna - 95, 320, 90};
 
     // przyciski pauzy
     Rectangle btnWznow = {szerokosc_okna / 2.0f - 100, 250, 200, 50};
@@ -946,21 +954,17 @@ int main()
             // // rysujemy na tle gry zeby przyciemnic
             DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.3f));
 
-            // napis w menu
-            // DrawText("TYTUL GRY", szerokosc_okna / 2 - 150, 100, 40, DARKGRAY);
-
             // Pole na wpisywanie nicku
-            // DrawText("WPISZ SWOJ NICK: ", szerokosc_okna / 2 - 100, 200, 20, DARKGRAY);
-            DrawRectangle(szerokosc_okna / 2 - 105, 230, 210, 40, LIGHTGRAY); // pole tekstowe
-            DrawText(nickname, szerokosc_okna / 2 - 100, 240, 20, BLACK);
+            DrawRectangle(szerokosc_okna / 2 - 140, wysokosc_okna / 2 + 40, 290, 48, GRAY); // pole tekstowe
+            DrawText(nickname, szerokosc_okna / 2 - 125, wysokosc_okna / 2 + 45, 30, BLACK);
 
-            // rysowanie przycisku (zmienia kolor po najechaniu myszką)
-            DrawRectangleRec(btnStart, CzyMyszkaNadPrzyciskiem(btnStart) ? kolor1btnStart : kolor2btnStart);
-            DrawText("START", btnStart.x + 60, btnStart.y + 15, 20, WHITE);
+            // rysowanie przycisku START
+            Color tintStart = CzyMyszkaNadPrzyciskiem(btnStart) ? GRAY : LIGHTGRAY;
+            DrawTexturePro(startText, {0, 0, (float)startText.width, (float)startText.height}, btnStart, {0, 0}, 0.0f, tintStart);
 
-            DrawRectangleRec(btnExit, CzyMyszkaNadPrzyciskiem(btnExit) ? kolor1btnExit : kolor2btnExit);
-            DrawText("WYJDZ", btnExit.x + 60, btnExit.y + 15, 20, WHITE);
-
+            // rysowanie przycisku WYJDZ
+            Color tintExit = CzyMyszkaNadPrzyciskiem(btnExit) ? GRAY : LIGHTGRAY;
+            DrawTexturePro(exitText, {0, 0, (float)exitText.width, (float)exitText.height}, btnExit, {0, 0}, 0.0f, tintExit);
             //--RYSOWANIE LEADERBOARD
             ifstream plikPokaz("top10.txt");
             string n;
@@ -1000,7 +1004,7 @@ int main()
                     int Animacja_migania_laseru = (klatka + 1) % 9;
                     w_trakcie_bossa = true;
 
-                    //DrawTextureEx(fireball_przeszkoda.tekstura, fireball_przeszkoda.polozenie, 0.0f, skalowanie_borazu_fireball, WHITE);
+                    // DrawTextureEx(fireball_przeszkoda.tekstura, fireball_przeszkoda.polozenie, 0.0f, skalowanie_borazu_fireball, WHITE);
 
                     if (co_ile_laser / 2 <= Animacja_lasera && Animacja_lasera <= co_ile_laser / 2 + wind_up_laseru)
                     {
@@ -1169,14 +1173,14 @@ int main()
                 DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.5f));
                 DrawText("PAUZA", szerokosc_okna / 2 - 50, 150, 40, WHITE);
 
-                DrawRectangleRec(btnWznow, CzyMyszkaNadPrzyciskiem(btnWznow) ? kolor1btnStart : kolor2btnStart);
-                DrawText("WZNOW", btnWznow.x + 55, btnWznow.y + 15, 20, WHITE);
+                Color tintWznow = CzyMyszkaNadPrzyciskiem(btnWznow) ? GRAY : LIGHTGRAY;
+                DrawTexturePro(wznowText, {0, 0, (float)wznowText.width, (float)wznowText.height}, btnWznow, {0, 0}, 0.0f, tintWznow);
 
-                DrawRectangleRec(btnPowrotMenu, CzyMyszkaNadPrzyciskiem(btnPowrotMenu) ? kolor1btnMenu : kolor2btnMenu);
-                DrawText("MENU", btnPowrotMenu.x + 65, btnPowrotMenu.y + 15, 20, WHITE);
+                Color tintPowrotMenu = CzyMyszkaNadPrzyciskiem(btnPowrotMenu) ? GRAY : LIGHTGRAY;
+                DrawTexturePro(menuText, {0, 0, (float)menuText.width, (float)menuText.height}, btnPowrotMenu, {0, 0}, 0.0f, tintPowrotMenu);
 
-                DrawRectangleRec(btnPauzaExit, CzyMyszkaNadPrzyciskiem(btnPauzaExit) ? kolor1btnExit : kolor2btnExit);
-                DrawText("WYJDZ", btnPauzaExit.x + 60, btnPauzaExit.y + 15, 20, WHITE);
+                Color tintPauzaExit = CzyMyszkaNadPrzyciskiem(btnPauzaExit) ? GRAY : LIGHTGRAY;
+                DrawTexturePro(exitText, {0, 0, (float)exitText.width, (float)exitText.height}, btnPauzaExit, {0, 0}, 0.0f, tintPauzaExit);
             }
             else if (aktualnyStan == GameOver)
             {
@@ -1197,11 +1201,11 @@ int main()
 
                 DrawText(TextFormat("KONCOWY DYSTANS: %05d", distance), szerokosc_okna / 2 - 300, 260, 50, GRAY);
 
-                DrawRectangleRec(btnPowrotMenu, CzyMyszkaNadPrzyciskiem(btnPowrotMenu) ? kolor1btnMenu : kolor2btnMenu);
-                DrawText("MENU", btnPowrotMenu.x + 65, btnPowrotMenu.y + 15, 20, WHITE);
+                Color tintPowrotMenu = CzyMyszkaNadPrzyciskiem(btnPowrotMenu) ? GRAY : LIGHTGRAY;
+                DrawTexturePro(menuText, {0, 0, (float)menuText.width, (float)menuText.height}, btnPowrotMenu, {0, 0}, 0.0f, tintPowrotMenu);
 
-                DrawRectangleRec(btnPauzaExit, CzyMyszkaNadPrzyciskiem(btnPauzaExit) ? kolor1btnExit : kolor2btnExit);
-                DrawText("WYJDZ", btnPauzaExit.x + 60, btnPauzaExit.y + 15, 20, WHITE);
+                Color tintPauzaExit = CzyMyszkaNadPrzyciskiem(btnPauzaExit) ? GRAY : LIGHTGRAY;
+                DrawTexturePro(exitText, {0, 0, (float)exitText.width, (float)exitText.height}, btnPauzaExit, {0, 0}, 0.0f, tintPauzaExit);
             }
         }
         EndDrawing();
