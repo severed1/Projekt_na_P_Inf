@@ -27,3 +27,8 @@ Czasami gra może się zawieszać/nie odpowiedać popracuje nad tym jutro wszyst
 pousuwałem stare grafiki ale jeśli z jakiegoś powodu będziecie ich potrzebowali to może je sciągnąć ze starych commitów 
 
 jak dla mnie to baza poziomu 1 jest już gotowa teraz trzebasię zabrać za 1 boss fight (mozna by lekko poprawić niektóre hit boxy ale mi się narazie nie chce)
+
+
+Plik zrobił się duzy wiec polecam korzystac z `CTRL + f czylil` wyszukiwania słów kluczowych (mozna sobie dodwac w komentazu i odrazu znajdowac) i `CTRL + left mouse` czyli przesuwasz sie do definicji a `CTRL + ALT + "-"` wraca tam gdzie byliscie wczesniej
+
+moze niedziałac restart bo smierci, czasami przeszkody moga sie pojawiac za blisko 
