@@ -198,6 +198,12 @@ int main()
 
     int distance = 0; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss
 
+    bool startLevelOne = true; // dodanie tektu przy pierwszej zmianie predkosci 
+    float timer_tekst = 0.0f; 
+    std::string tekst_fabularny = "Wyruszamy ku przygodzie!"; //  tekst fabularny
+   
+
+
     //---ZMIENNE DO TABELI WYNIKOW I NICKU GRACZA
     char nickname[16] = "\0"; // tablica na nick (15znakow)
     int charCount = 0;
@@ -275,6 +281,16 @@ int main()
         // --- KOD GRY ---
         {
             distance++;
+
+             // --- ustawienie tekstu fabularnego tylko raz ---
+           if (startLevelOne)
+           {
+            
+              timer_tekst = 2.0f;
+              tekst_fabularny = "Wyruszamy ku przygodzie!"; // tekst fabularny
+              startLevelOne = false;
+           }
+
             // przechodzimy do pauzy gdy kliknie ktos escape
             if (IsKeyPressed(KEY_ESCAPE))
                 aktualnyStan = PAUZA;
@@ -493,6 +509,24 @@ int main()
             {
                 DrawTextureEx(tekstura_skoku, {polozenie_gracza.x - 40, polozenie_gracza.y - 60}, 0.0f, skalowanie_obrazu_gracza_skoku, WHITE);
             }
+
+            // Wyświetlanie fabularnego tekstu
+            if (timer_tekst > 0.0f)
+            {
+               int szerokoscTekstu = MeasureText(tekst_fabularny.c_str(), 24);
+
+               // --- nowy dodany prostokąt pod tekstem ---
+               DrawRectangle(
+                   szerokosc_okna / 2 - szerokoscTekstu/2 - 10, // x
+                   100 - 5,                                     // y
+                   szerokoscTekstu + 20,                        // szerokość
+                   34,                                          // wysokość (wysokość tekstu + padding)
+                   Fade(BLACK, 0.5f)                            // kolor półprzezroczysty
+                );
+               DrawText(tekst_fabularny.c_str(), szerokosc_okna/2 - szerokoscTekstu/2, 100, 24, RED);
+               timer_tekst -= GetFrameTime(); 
+            }
+
 
             DrawText("POZIOM 1", 10, 10, 20, GRAY);
             DrawText(TextFormat("DYSTANS: %05d", distance), szerokosc_okna - 200, 10, 20, GRAY);
