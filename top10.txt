@@ -7,14 +7,4 @@ Sigma 17593
 Sigma 17576
 AGHFORTHEWIN 14465
 Sigma 11464
-UJGUROM 11077
-<<<<<<< Updated upstream
-=======
-test_87 10007
-Sigma 8937
-UJGUROM 6799
-Sigma 6091
-test_16 5823
-test 5762
-Sigma 4954
->>>>>>> Stashed changes
+Sigma 11094

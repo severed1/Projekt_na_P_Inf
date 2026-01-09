@@ -235,6 +235,37 @@ static bool TooCloseForSzczur(int x, int minDist,
            TooCloseX(x, batPos.x, minDist);
 }
 
+int zycie = 3;          // ilość serc/gracza
+bool trafiony = false;
+int poprzednieZycie = 3;
+bool IsDead = false;
+int distance = 0;
+
+float animacjaSerceTimer = 0.0f;
+bool animacjaSerceAktywna = false;
+
+
+const float CZAS_ANIMACJI_SERCA = 0.3f; 
+
+int szerokoscSerca = 65;
+int wysokoscSerca = 65;
+int odstep = 0;              // odstęp między sercami
+int startX = 10;             // lewy margines od ekranu
+int startY = 10; 
+
+void StartNowejGry() {
+    zycie = 3;                     
+    poprzednieZycie = 3;          
+    trafiony = false;              
+    animacjaSerceAktywna = false; 
+    animacjaSerceTimer = 0.0f;   
+    IsDead = false;                
+                   
+}
+
+
+
+
 int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarach
@@ -282,6 +313,9 @@ int main()
     Texture2D laser = LoadTexture("assets/Boss/laser_2.png");
 
     Texture2D fireball = LoadTexture("assets/Boss/fireball.png");
+
+    Texture2D serceTexture = LoadTexture("assets/background/serce.png"); // życie gracza
+
 
     // tekstury przycisków
     Texture2D startText = LoadTexture("assets/przyciski/start.png");
@@ -376,6 +410,10 @@ int main()
 
     int distance = 0; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss_tekstura
 
+    
+    
+
+
     bool startLevelOne = true; // dodanie tektu przy pierwszej zmianie predkosci 
     float timer_tekst = 0.0f; 
     std::string tekst_fabularny = "Wyruszamy ku przygodzie!"; //  tekst fabularny
@@ -423,7 +461,7 @@ int main()
     Rectangle Hit_box_lasera = {offsetXlasera, offsetYlasera, szerokosc_okna + 300, (laser_przeszkoda.tekstura.width * skalowanie_obrazu_szczura) - 220};
 
     // potrzebne zeby sie nie ruszal po smierci
-    bool IsDead = false;
+    
     double game_speed_hamowanie[3] = {5 + log(1 + distance / 300)}; // zwiekszanie sie game speedu logarytmicznie zeby nie zaszybko sie zmieniało w predkosc swiatla
 
     // zapisywanie poczatkowych polozeni do resetu po skuciu
@@ -452,14 +490,19 @@ int main()
 
     bool na_dole = false;
 
+    bool trafiony = false;
+
     while (!WindowShouldClose()) // utrzymuje okno otwarte i wykonuje polecenie wymagane przy operacji na oknach
     {
         //-- IF DLA POSZCZEGOLNYCH STANOW GRY
         if (aktualnyStan == MENU)
         {
             //--- KOD MENU ---
-            if (CzyKliknietoPrzycisk(btnStart) || IsKeyPressed(KEY_ENTER))
+            if (CzyKliknietoPrzycisk(btnStart) || IsKeyPressed(KEY_ENTER)) {
+                StartNowejGry();
                 aktualnyStan = LEVELONE;
+            }
+            
             if (CzyKliknietoPrzycisk(btnExit))
                 break; // zamykanie programu
 
@@ -506,14 +549,15 @@ int main()
             // --- LOGIKA GRY ---
 
             // sprawdzanie kolizji kolizje*
+            trafiony = false;
+
             if (czas_skoku == 0)
             {
                 if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                 {
                     if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_4))
                     {
-                        aktualnyStan = GameOver;
-                        IsDead = true;
+                        trafiony = true;
                     }
                 }
                 else
@@ -521,8 +565,7 @@ int main()
 
                     if (CheckCollisionRecs(Hit_box_gracza, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_4))
                     {
-                        aktualnyStan = GameOver;
-                        IsDead = true;
+                        trafiony = true;
                     }
                 }
             }
@@ -530,8 +573,7 @@ int main()
             {
                 if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_4))
                 {
-                    aktualnyStan = GameOver;
-                    IsDead = true;
+                    trafiony = true;
                 }
             }
 
@@ -542,8 +584,7 @@ int main()
                     {
                         if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_lasera))
                         {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
+                            trafiony = true;
                         }
                     }
                     else
@@ -551,8 +592,7 @@ int main()
 
                         if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
                         {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
+                            trafiony = true;
                         }
                     }
                 }
@@ -560,10 +600,23 @@ int main()
                 {
                     if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
                     {
-                        aktualnyStan = GameOver;
-                        IsDead = true;
+                       trafiony = true;
                     }
                 }
+                // jeśli gracz został trafiony, odejmujemy życie
+                if (trafiony && !animacjaSerceAktywna) {
+                    zycie--;                      // odejmujemy życie
+                    animacjaSerceAktywna = true;  // uruchamiamy animację "znikającego serca"
+                    animacjaSerceTimer = 0.0f;    // reset timera animacji
+                    trafiony = false;             // reset flagi kolizji
+                    if (zycie <= 0) {             // jeśli brak życia, GameOver
+                       aktualnyStan = GameOver;
+                       IsDead = true;
+                    }
+                }
+
+                
+
 
             // poruszanie sie
             float dt = GetFrameTime();
@@ -954,6 +1007,8 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
+        
+
         // -- KOLORY PRZYCISKOW
         Color kolor1btnStart = SKYBLUE;
         Color kolor2btnStart = DARKBLUE;
@@ -1241,6 +1296,50 @@ int main()
                 Color tintPauzaExit = CzyMyszkaNadPrzyciskiem(btnPauzaExit) ? GRAY : LIGHTGRAY;
                 DrawTexturePro(exitText, {0, 0, (float)exitText.width, (float)exitText.height}, btnPauzaExit, {0, 0}, 0.0f, tintPauzaExit);
             }
+            
+
+            
+            for (int i = 0; i < zycie; i++) 
+            {
+                float alpha = 1.0f; // pełna widoczność
+
+                if (animacjaSerceAktywna)
+                {
+                   float czasNaSerce = animacjaSerceTimer - i * 0.1f;
+                   if (czasNaSerce > 0)
+                   {
+                      alpha = 1.0f - (czasNaSerce / 0.5f);
+                      if (alpha < 0.0f) alpha = 0.0f;
+                   }
+                }
+
+                 DrawTexturePro(
+                    serceTexture,
+                    (Rectangle){0, 0, (float)serceTexture.width, (float)serceTexture.height},
+                    (Rectangle){
+                       (float)(startX + i * (szerokoscSerca + odstep)),
+                       (float)startY,
+                       (float)szerokoscSerca,
+                       (float)wysokoscSerca
+                    },
+                   (Vector2){0, 0},
+                   0.0f,
+                   Fade(WHITE, alpha)
+                );
+            }
+
+            // Aktualizacja timera animacji
+            if (animacjaSerceAktywna)
+            {
+                animacjaSerceTimer += GetFrameTime();
+                if (animacjaSerceTimer >= 0.5f + zycie * 0.1f)
+                {
+                    animacjaSerceAktywna = false;
+                    animacjaSerceTimer = 0.0f;
+                }
+            }
+
+
         }
         EndDrawing();
     }
