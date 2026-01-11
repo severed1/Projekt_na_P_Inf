@@ -14,6 +14,7 @@
 #include <cmath>
 #include <random>
 #include <cstdlib>
+#include "hitboxes.cpp"
 
 // wartosci dla okna
 #define wysokosc_okna 720
@@ -204,66 +205,13 @@ void UpdateTop10(string nick, int wynik)
 //     };
 // }
 
-void rysowanie_hit_box(Rectangle hitbox, Color kolor)
-{
-    DrawRectangleLines( // rysowanie hit boxów bo je trzeba lekko poprawiać
-        (int)hitbox.x,
-        (int)hitbox.y,
-        (int)hitbox.width,
-        (int)hitbox.height,
-        kolor);
-}
-
-static bool TooCloseX(int x, float otherX, int minDist)
-{
-    return std::abs(x - (int)otherX) < minDist;
-}
-
-static bool TooCloseForSzkielet(int x, int minDist,
-                                const Vector2 &duchPos,
-                                const Vector2 &batPos,
-                                const Vector2 &szczurPos)
-{
-    return TooCloseX(x, duchPos.x, minDist) ||
-           TooCloseX(x, batPos.x, minDist) ||
-           TooCloseX(x, szczurPos.x, minDist);
-}
-
-static bool TooCloseForDuch(int x, int minDist,
-                            const Vector2 &szkieletPos,
-                            const Vector2 &batPos,
-                            const Vector2 &szczurPos)
-{
-    return TooCloseX(x, szkieletPos.x, minDist) ||
-           TooCloseX(x, batPos.x, minDist) ||
-           TooCloseX(x, szczurPos.x, minDist);
-}
-
-static bool TooCloseForBat(int x, int minDist,
-                           const Vector2 &duchPos,
-                           const Vector2 &szkieletPos,
-                           const Vector2 &szczurPos)
-{
-    return TooCloseX(x, duchPos.x, minDist) ||
-           TooCloseX(x, szkieletPos.x, minDist) ||
-           TooCloseX(x, szczurPos.x, minDist);
-}
-
-static bool TooCloseForSzczur(int x, int minDist,
-                              const Vector2 &duchPos,
-                              const Vector2 &szkieletPos,
-                              const Vector2 &batPos)
-{
-    return TooCloseX(x, duchPos.x, minDist) ||
-           TooCloseX(x, szkieletPos.x, minDist) ||
-           TooCloseX(x, batPos.x, minDist);
-}
-
 int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarach
     SetExitKey(KEY_NULL);                                                      // wylaczamy bazowe zachowanie klawisza esc
     SetTargetFPS(ilosc_fps);                                                   // ustala ilosc docelowa fps w oknie
+
+    Font font = LoadFontEx("assets/font/font.otf", 64, 0, 0);
 
     random_device rd;
     mt19937 gen(rd());
@@ -314,6 +262,7 @@ int main()
     Texture2D menuText = LoadTexture("assets/przyciski/menu.png");
     Texture2D exitText = LoadTexture("assets/przyciski/exit.png");
     Texture2D wznowText = LoadTexture("assets/przyciski/wznow.png");
+    Texture2D retryText = LoadTexture("assets/przyciski/retry.png");
     Texture2D bolt = LoadTexture("assets/Boss/bolt.png");
 
     int animacja = 0; // nie istotne uzyte do próby animacji
@@ -786,7 +735,6 @@ int main()
                 Hit_box_lasera.x = Polozenie_poczatkowe_hitbox_laseru.x;
                 Hit_box_lasera.y = Polozenie_poczatkowe_hitbox_laseru.y;
 
-
                 krencenie_sie = false;
 
                 distance_dla_fireballa = 0;
@@ -794,10 +742,8 @@ int main()
                 fireball_przeszkoda.polozenie.x = polozenie_startowe_fireballa.x;
                 fireball_przeszkoda.polozenie.y = polozenie_startowe_fireballa.y;
 
-
                 Hit_box_fireball.x = offsetXfireball;
                 Hit_box_fireball.y = offsetYfireball;
-
 
                 czaszka_boss.ilosc_hp = 3;
 
@@ -1218,7 +1164,7 @@ int main()
         else if (aktualnyStan == GameOver) // smierc + reset
         {
             animacja++;
-            if (CzyKliknietoPrzycisk(btnPowrotMenu))
+            if (CzyKliknietoPrzycisk(btnPowrotMenu) || CzyKliknietoPrzycisk(btnWznow))
             {
 
                 UpdateTop10(nickname, distance);
@@ -1227,7 +1173,6 @@ int main()
                 Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_szkieleta.x;
 
                 czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
-
 
                 duch.polozenie = polozenie_startowe_ducha;
                 Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
@@ -1257,12 +1202,10 @@ int main()
                 czaszka_boss.laser_on = false;
 
                 max_czas_skoku = 1.0f;
-                aktualnyStan = MENU;
                 scrollSpeed = 150.0f;
 
                 // Hit_box_fireball.x = szerokosc_okna/2 + 1000;
                 // Hit_box_fireball.y = wysokosc_okna/2;
-
 
                 distance_dla_fireballa = 0;
 
@@ -1273,10 +1216,8 @@ int main()
                 fireball_przeszkoda.polozenie.x = polozenie_startowe_fireballa.x;
                 fireball_przeszkoda.polozenie.y = polozenie_startowe_fireballa.y;
 
-
                 Hit_box_fireball.x = offsetXfireball;
                 Hit_box_fireball.y = offsetYfireball;
-
 
                 gen.seed(random_device{}());
 
@@ -1310,6 +1251,15 @@ int main()
                 speed_fireballa_przod_z = speed_fireballa_przod;
                 radiusX_fireball_z = radiusX_fireball;
                 radiusY_fireball_z = radiusY_fireball;
+                if (CzyKliknietoPrzycisk(btnPowrotMenu))
+                {
+                    aktualnyStan = MENU;
+                }
+                else
+                {
+                    aktualnyStan = LEVELONE;
+                    startLevelOne = true;
+                }
             }
             if (CzyKliknietoPrzycisk(btnPauzaExit))
             {
@@ -1340,7 +1290,7 @@ int main()
 
             // Pole na wpisywanie nicku
             DrawRectangle(szerokosc_okna / 2 - 140, wysokosc_okna / 2 + 40, 290, 48, GRAY); // pole tekstowe
-            DrawText(nickname, szerokosc_okna / 2 - 125, wysokosc_okna / 2 + 45, 30, BLACK);
+            DrawTextEx(font, nickname, {szerokosc_okna / 2 - 125, wysokosc_okna / 2 + 45}, 40, 3, BLACK);
 
             // rysowanie przycisku START
             Color tintStart = CzyMyszkaNadPrzyciskiem(btnStart) ? GRAY : LIGHTGRAY;
@@ -1355,11 +1305,9 @@ int main()
             int d;
             int yOffset = 0;
 
-            // DrawText("TABELA TOP 10: ", 50, 50, 20, GOLD);
-
             while (plikPokaz >> n >> d && yOffset < 10)
             {
-                DrawText(TextFormat("%d. %s - %d", yOffset + 1, n.c_str(), d), 50, 120 + (yOffset * 25), 18, DARKGRAY);
+                DrawTextEx(font, TextFormat("%d. %s - %d", yOffset + 1, n.c_str(), d), {50, (float)120 + (yOffset * 25)}, 25, 3, DARKGRAY);
                 yOffset++;
             }
             plikPokaz.close();
@@ -1712,26 +1660,25 @@ int main()
                 int szerokoscTekstu = MeasureText(tekst_fabularny.c_str(), 24);
 
                 // --- nowy dodany prostokąt pod tekstem ---
-                DrawRectangle(
-                    szerokosc_okna / 2 - szerokoscTekstu / 2 - 10, // x
-                    100 - 5,                                       // y
-                    szerokoscTekstu + 20,                          // szerokość
-                    34,                                            // wysokość (wysokość tekstu + padding)
-                    Fade(BLACK, 0.5f)                              // kolor półprzezroczysty
-                );
-                DrawText(tekst_fabularny.c_str(), szerokosc_okna / 2 - szerokoscTekstu / 2, 100, 24, RED);
+                // DrawRectangle(
+                //     szerokosc_okna / 2 - szerokoscTekstu / 2 - 10, // x
+                //     100 - 5,                                       // y
+                //     szerokoscTekstu + 20,                          // szerokość
+                //     34,                                            // wysokość (wysokość tekstu + padding)
+                //     Fade(BLACK, 0.5f)                              // kolor półprzezroczysty
+                // );
+                DrawTextEx(font, tekst_fabularny.c_str(), {(float)szerokosc_okna / 2 - szerokoscTekstu / 2}, 50, 3, RED);
                 timer_tekst -= GetFrameTime();
             }
 
-            DrawText("POZIOM 1", 10, 10, 20, GRAY);
-            DrawText(TextFormat("DYSTANS: %05d", distance), szerokosc_okna - 200, 10, 20, GRAY);
+            DrawTextEx(font, "Dungeons", {10, 10}, 30, 3, GRAY);
+            DrawTextEx(font, TextFormat("DYSTANS: %05d", distance), {szerokosc_okna - 200, 10}, 30, 3, GRAY);
 
-            //DrawText(TextFormat("DYSTANS: %lf", fireball_przeszkoda.polozenie.y), szerokosc_okna - 700, 40, 40, GRAY); //usun
             if (aktualnyStan == PAUZA)
             {
                 // Nakładamy lekki przyciemniający filtr na ekran gry
                 DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.5f));
-                DrawText("PAUZA", szerokosc_okna / 2 - 50, 150, 40, WHITE);
+                DrawTextEx(font, "PAUZA", {szerokosc_okna / 2 - 50, 150}, 40, 3, WHITE);
 
                 Color tintWznow = CzyMyszkaNadPrzyciskiem(btnWznow) ? GRAY : LIGHTGRAY;
                 DrawTexturePro(wznowText, {0, 0, (float)wznowText.width, (float)wznowText.height}, btnWznow, {0, 0}, 0.0f, tintWznow);
@@ -1746,7 +1693,7 @@ int main()
             {
 
                 DrawRectangle(0, 0, szerokosc_okna, wysokosc_okna, Fade(BLACK, 0.5f));
-                DrawText("GAME OVER", szerokosc_okna / 2 - 150, 200, 50, GRAY);
+                DrawTextEx(font, "GAME OVER", {szerokosc_okna / 2 - 130, 100}, 50, 3, GRAY);
 
                 int frameCounter = (animacja + 1) % 30;
 
@@ -1759,7 +1706,10 @@ int main()
                     DrawTextureEx(czaszka_2, {szerokosc_okna / 2 - 105, 420}, 0.0f, 0.2, GRAY);
                 }
 
-                DrawText(TextFormat("KONCOWY DYSTANS: %05d", distance), szerokosc_okna / 2 - 300, 260, 50, GRAY);
+                DrawTextEx(font, TextFormat("KONCOWY DYSTANS: %05d", distance), {szerokosc_okna / 2 - 280, 160}, 50, 3, GRAY);
+
+                Color tintRetry = CzyMyszkaNadPrzyciskiem(btnWznow) ? GRAY : LIGHTGRAY;
+                DrawTexturePro(retryText, {0, 0, (float)retryText.width, (float)retryText.height}, btnWznow, {0, 0}, 0.0f, tintRetry);
 
                 Color tintPowrotMenu = CzyMyszkaNadPrzyciskiem(btnPowrotMenu) ? GRAY : LIGHTGRAY;
                 DrawTexturePro(menuText, {0, 0, (float)menuText.width, (float)menuText.height}, btnPowrotMenu, {0, 0}, 0.0f, tintPowrotMenu);
