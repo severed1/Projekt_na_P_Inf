@@ -929,7 +929,7 @@ int main()
             uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
             uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
 
-            for (int i; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 game_speed_hamowanie[i] = {5 + log(1 + distance / 300)};
             }
@@ -1166,100 +1166,75 @@ int main()
             animacja++;
             if (CzyKliknietoPrzycisk(btnPowrotMenu) || CzyKliknietoPrzycisk(btnWznow))
             {
-
                 UpdateTop10(nickname, distance);
+                // 1. STATUS I PODSTAWY
+                IsDead = false;
                 distance = 0;
+                scrollSpeed = 150.0f;
+                timer_tekst = 0;
+                startLevelOne = true;
+                aktualnyStan = CzyKliknietoPrzycisk(btnPowrotMenu) ? MENU : LEVELONE;
+
+                // 2. RESET GRACZA
+                polozenie_gracza.y = ziemiaY;
+                czas_skoku = 0;
+                max_czas_skoku = 1.0f;
+                Hit_box_gracza.y = Polozenie_poczatkowe_hitbox_gracza.y;
+                Hit_box_gracza_w_skoku.y = Polozenie_poczatkowe_hitbox_gracza_w_skoku.y;
+
+                // 3. RESET STANDARDOWYCH PRZESZKÓD
                 szkielet.polozenie = polozenie_startowe_szkieleta;
+                szkielet.czy_jest_zatrzymany = false;
                 Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_szkieleta.x;
 
-                czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
-
                 duch.polozenie = polozenie_startowe_ducha;
+                duch.czy_jest_zatrzymany = false;
                 Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
-                Hit_box_ducha_1.y = Polozenie_poczatkowe_hitbox_ducha_1.y;
-
-                Hit_box_ducha_2.x = Polozenie_poczatkowe_hitbox_ducha_2.x;
-                Hit_box_ducha_2.y = Polozenie_poczatkowe_hitbox_ducha_2.y;
-
-                Hit_box_ducha_3.x = Polozenie_poczatkowe_hitbox_ducha_3.x;
-                Hit_box_ducha_3.y = Polozenie_poczatkowe_hitbox_ducha_3.y;
-
-                Hit_box_ducha_4.x = Polozenie_poczatkowe_hitbox_ducha_4.x;
-                Hit_box_ducha_4.y = Polozenie_poczatkowe_hitbox_ducha_4.y;
-
-                polozenie_gracza.y = ziemiaY;
-                Hit_box_gracza.y = Polozenie_poczatkowe_hitbox_gracza.y;
 
                 bat.polozenie = polozenie_startowe_bat;
-                Hit_box_bat.x = Polozenie_poczatkowe_hitbox_bat.x;
-                Hit_box_bat.y = Polozenie_poczatkowe_hitbox_bat.y;
-
-                szczur.polozenie = polozenie_startowe_szczura;
-                Hit_box_szczura.x = Polozenie_poczatkowe_hitbox_szczura.x;
-                Hit_box_szczura.y = Polozenie_poczatkowe_hitbox_szczura.y;
-
-                polozenie_napisu = poczontkowe_polozenie_napisu;
-                czaszka_boss.laser_on = false;
-
-                max_czas_skoku = 1.0f;
-                scrollSpeed = 150.0f;
-
-                // Hit_box_fireball.x = szerokosc_okna/2 + 1000;
-                // Hit_box_fireball.y = wysokosc_okna/2;
-
-                distance_dla_fireballa = 0;
-
-                na_dole = false;
-
-                polozenie_startowe_fireballa = polozenie_startowe_fireballa_prawdziwe;
-
-                fireball_przeszkoda.polozenie.x = polozenie_startowe_fireballa.x;
-                fireball_przeszkoda.polozenie.y = polozenie_startowe_fireballa.y;
-
-                Hit_box_fireball.x = offsetXfireball;
-                Hit_box_fireball.y = offsetYfireball;
-
-                gen.seed(random_device{}());
-
-                szkielet.czy_jest_zatrzymany = false;
-                duch.czy_jest_zatrzymany = false;
                 bat.czy_jest_zatrzymany = false;
+                
+                szczur.polozenie = polozenie_startowe_szczura;
                 szczur.czy_jest_zatrzymany = false;
 
-                Hit_box_lasera.x = Polozenie_poczatkowe_hitbox_laseru.x;
-                Hit_box_lasera.y = Polozenie_poczatkowe_hitbox_laseru.y;
-
-                czaszka_boss.ilosc_hp = 3;
-
-                kusza_item.polozenie.x = pozycjaX_kuszy(gen);
-
-                Hit_box_kusza.x = offsetXkusza;
-
+                // 4. RESET BOSSA I JEGO ATAKÓW (KLUCZOWE!)
                 w_trakcie_bossa = false;
-                krencenie_sie = false;
-                czy_powinna_leciec = false;
                 po_bossie = false;
+                ucieczka = false;
+                krencenie_sie = false;
+                czaszka_boss.ilosc_hp = 3;
+                czaszka_boss.laser_on = false;
+                czaszka_boss.laser_rozgrzewanie = false;
+                czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
+                
                 licznik_klatek_wysuwanie = 0;
                 klatka = 0;
-                distance_dla_fireballa = 0;
-                animacja_na_7 = 0;
-
-                ucieczka = false;
                 animacja_smierci_czaszki = 0;
 
+                // 5. RESET FIREBALLA I MECHANIKI KOŁA
+                distance_dla_fireballa = 0;
+                fireball_przeszkoda.polozenie = polozenie_startowe_fireballa_prawdziwe;
+                Hit_box_fireball.x = offsetXfireball;
+                Hit_box_fireball.y = offsetYfireball;
+                
+                // Ważne: zresetuj parametry losowe fireballa do bazowych
                 speed_fireballa_krencenie_z = speed_fireballa_krencenie;
                 speed_fireballa_przod_z = speed_fireballa_przod;
                 radiusX_fireball_z = radiusX_fireball;
                 radiusY_fireball_z = radiusY_fireball;
-                if (CzyKliknietoPrzycisk(btnPowrotMenu))
-                {
-                    aktualnyStan = MENU;
-                }
-                else
-                {
-                    aktualnyStan = LEVELONE;
-                    startLevelOne = true;
-                }
+
+                // 6. RESET PRZEDMIOTÓW I NAPISÓW
+                kusza_item.czy_podniesiona = false;
+                czy_powinna_leciec = false;
+                boltT = 0; // reset lotu bełtu
+                kusza_item.polozenie.x = (float)pozycjaX_kuszy(gen);
+                
+                polozenie_napisu = poczontkowe_polozenie_napisu;
+                na_dole = false;
+                pozycja_tla_y = -200; // powrót tła na miejsce po trzęsieniu ziemi
+
+                // 7. PONOWNE LOSOWANIE SEEDU
+                gen.seed(rd());
             }
             if (CzyKliknietoPrzycisk(btnPauzaExit))
             {
