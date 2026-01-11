@@ -1,10 +1,8 @@
 // kompilacja
 // g++ main_file.cpp -o gra.exe -I C:/raylib/include -L C:/raylib/lib -lraylib -lopengl32 -lgdi32 -lwinmm
 
-
-
 // td
-//  3. kusza gora dul 4 5. koniec stanu bossa 6. działający reset
+//  1. reset
 
 // biblioteki
 #include <iostream>
@@ -64,14 +62,14 @@
 #define offsetXlasera ((float)czaszka_boss.polozenie.x - 1300)
 #define offsetYlasera ((float)czaszka_boss.polozenie.y + 450)
 
-#define offsetXfireball ((float)czaszka_boss.polozenie.x - 660)
-#define offsetYfireball ((float)czaszka_boss.polozenie.y + 375)
+#define offsetXfireball ((float)fireball_przeszkoda.polozenie.x + 35)
+#define offsetYfireball ((float)fireball_przeszkoda.polozenie.y + 30)
 
 #define offsetXkusza ((float)kusza_item.polozenie.x + 30)
 #define offsetYkusza ((float)kusza_item.polozenie.y + 20)
 
 // prock boss_tekstura fighta
-#define boss_fight_distance 2000
+#define boss_fight_distance 2000 // 4000
 #define co_ile_laser 2000
 #define wind_up_laseru 300
 #define czas_trwania_laseru 400
@@ -86,7 +84,7 @@
 #define speed_fireballa_przod 70.0f
 #define radiusX_fireball 80
 #define radiusY_fireball 60
-#define jak_czensto_kusza 8000
+#define jak_czensto_kusza 3000 // 8000
 
 using namespace std;
 
@@ -339,13 +337,18 @@ int main()
     uniform_int_distribution<int> pozycjaX_kuszy(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, jak_czensto_kusza);
 
     // sprawdza czy w trakcie boss_tekstura fightu
+    // zmienne dla bossa
     bool w_trakcie_bossa = false;
     bool krencenie_sie = false;
     bool czy_powinna_leciec = false;
+    bool po_bossie = false;
     int licznik_klatek_wysuwanie = 0;
-    int klatka;
+    int klatka = 0;
     int distance_dla_fireballa = 0;
     int animacja_na_7 = 0;
+    Vector2 pozycja_po_wysunieciu;
+    bool ucieczka = false;
+    int animacja_smierci_czaszki = 0;
 
     float speed_fireballa_krencenie_z = speed_fireballa_krencenie;
     float speed_fireballa_przod_z = speed_fireballa_przod;
@@ -420,8 +423,9 @@ int main()
     przeszkoda fireball_przeszkoda;
     fireball_przeszkoda.tekstura = fireball;
     fireball_przeszkoda.rodzaj_typu_przeszkody = 6;
-    fireball_przeszkoda.polozenie = {(float)czaszka_boss.polozenie.x - 700, (float)czaszka_boss.polozenie.y + 350};
+    fireball_przeszkoda.polozenie = {(float)czaszka_boss.polozenie.x - 700, (float)czaszka_boss.polozenie.y + 350}; // problem
     Vector2 polozenie_startowe_fireballa = fireball_przeszkoda.polozenie;
+    Vector2 polozenie_startowe_fireballa_prawdziwe = polozenie_startowe_fireballa;
 
     item kusza_item;
     kusza_item.tekstura = kusza;
@@ -508,9 +512,9 @@ int main()
 
     float przesuniecie = 30.0f;
     Vector2 Polozenie_bolt = {100, wysokosc_okna / 2 + 100};
-    Vector2 Polozenie_serca_1 = {szerokosc_okna/2 + 610 - przesuniecie, wysokosc_okna/2 - 200 - przesuniecie};
-    Vector2 Polozenie_serca_2 = {szerokosc_okna/2 + 680 -  przesuniecie, wysokosc_okna/2 - 270 - przesuniecie};
-    Vector2 Polozenie_serca_3 = {szerokosc_okna/2 + 750 - przesuniecie, wysokosc_okna/2 - 200 - przesuniecie};
+    Vector2 Polozenie_serca_1 = {szerokosc_okna / 2 + 610 - przesuniecie, wysokosc_okna / 2 - 200 - przesuniecie};
+    Vector2 Polozenie_serca_2 = {szerokosc_okna / 2 + 680 - przesuniecie, wysokosc_okna / 2 - 270 - przesuniecie};
+    Vector2 Polozenie_serca_3 = {szerokosc_okna / 2 + 750 - przesuniecie, wysokosc_okna / 2 - 200 - przesuniecie};
 
     Vector2 Polozenie_poczatkowe_serca_1 = Polozenie_serca_1;
     Vector2 Polozenie_poczatkowe_serca_2 = Polozenie_serca_2;
@@ -729,10 +733,108 @@ int main()
                 else if (licznik_klatek_wysuwanie <= dlugosc_wysuwania + dlugosc_czekania_az_boss_zaczie_ruszac)
                 {
                     licznik_klatek_wysuwanie++;
+                    pozycja_po_wysunieciu = {czaszka_boss.polozenie.x, czaszka_boss.polozenie.y};
                 }
                 else if (licznik_klatek_wysuwanie > dlugosc_wysuwania + dlugosc_czekania_az_boss_zaczie_ruszac)
                 {
                     krencenie_sie = true;
+                }
+            }
+            if (czaszka_boss.ilosc_hp == 0) // smierc bossa
+            {
+
+                po_bossie = true;
+
+                ucieczka = true;
+
+                // reset pozycji przeszkud
+                szkielet.polozenie = polozenie_startowe_szkieleta;
+                Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_szkieleta.x;
+
+                duch.polozenie = polozenie_startowe_ducha;
+                Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
+                Hit_box_ducha_1.y = Polozenie_poczatkowe_hitbox_ducha_1.y;
+
+                Hit_box_ducha_2.x = Polozenie_poczatkowe_hitbox_ducha_2.x;
+                Hit_box_ducha_2.y = Polozenie_poczatkowe_hitbox_ducha_2.y;
+
+                Hit_box_ducha_3.x = Polozenie_poczatkowe_hitbox_ducha_3.x;
+                Hit_box_ducha_3.y = Polozenie_poczatkowe_hitbox_ducha_3.y;
+
+                Hit_box_ducha_4.x = Polozenie_poczatkowe_hitbox_ducha_4.x;
+                Hit_box_ducha_4.y = Polozenie_poczatkowe_hitbox_ducha_4.y;
+
+                bat.polozenie = polozenie_startowe_bat;
+                Hit_box_bat.x = Polozenie_poczatkowe_hitbox_bat.x;
+                Hit_box_bat.y = Polozenie_poczatkowe_hitbox_bat.y;
+
+                szczur.polozenie = polozenie_startowe_szczura;
+                Hit_box_szczura.x = Polozenie_poczatkowe_hitbox_szczura.x;
+                Hit_box_szczura.y = Polozenie_poczatkowe_hitbox_szczura.y;
+
+                szkielet.czy_jest_zatrzymany = false;
+                duch.czy_jest_zatrzymany = false;
+                bat.czy_jest_zatrzymany = false;
+                szczur.czy_jest_zatrzymany = false;
+
+                // reset napisu
+                polozenie_napisu = poczontkowe_polozenie_napisu;
+                na_dole = false;
+
+                // reset laseru
+                czaszka_boss.laser_on = false;
+                Hit_box_lasera.x = Polozenie_poczatkowe_hitbox_laseru.x;
+                Hit_box_lasera.y = Polozenie_poczatkowe_hitbox_laseru.y;
+
+
+                krencenie_sie = false;
+
+                distance_dla_fireballa = 0;
+
+                fireball_przeszkoda.polozenie.x = polozenie_startowe_fireballa.x;
+                fireball_przeszkoda.polozenie.y = polozenie_startowe_fireballa.y;
+
+
+                Hit_box_fireball.x = offsetXfireball;
+                Hit_box_fireball.y = offsetYfireball;
+
+
+                czaszka_boss.ilosc_hp = 3;
+
+                // reset kuszy
+                kusza_item.polozenie.x = pozycjaX_kuszy(gen);
+                Hit_box_kusza.x = offsetXkusza;
+
+                w_trakcie_bossa = false;
+            }
+            if (ucieczka)
+            {
+                if (czaszka_boss.polozenie.x <= czaszka_boss_pozycja_poczontokowa.x)
+                {
+                    int animacja_smierci_czaszkai_12 = (animacja_smierci_czaszki + 1) % 12;
+                    czaszka_boss.polozenie.x += 1.2;
+                    if (animacja_smierci_czaszkai_12 < 3)
+                    {
+                        czaszka_boss.polozenie.y += 0.6;
+                    }
+                    else if (animacja_smierci_czaszkai_12 < 6)
+                    {
+                        czaszka_boss.polozenie.y += 0.6;
+                    }
+                    else if (animacja_smierci_czaszkai_12 < 9)
+                    {
+                        czaszka_boss.polozenie.y -= 0.6;
+                    }
+                    else
+                    {
+                        czaszka_boss.polozenie.y -= 0.6;
+                    }
+                    animacja_smierci_czaszki++;
+                }
+                if (czaszka_boss.polozenie.x > 1120)
+                {
+                    ucieczka = false;
+                    czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
                 }
             }
 
@@ -782,9 +884,10 @@ int main()
                 }
             }
 
+            float t = distance * speed;
+
             if (w_trakcie_bossa && krencenie_sie)
             {
-                float t = distance * speed;
 
                 czaszka_boss.polozenie.x = (czaszka_boss_pozycja_poczontokowa.x - dlugosc_wysuwania + 100) + cos(t) * radiusX;
                 czaszka_boss.polozenie.y = czaszka_boss_pozycja_poczontokowa.y + sin(t) * radiusY;
@@ -805,7 +908,7 @@ int main()
             }
             // przemieszczanie się napisu
             float speed_napisu = 2.0f;
-            if (polozenie_napisu.y <= 0 && !na_dole && distance >= boss_fight_distance - dlugosc_trwania_znaku)
+            if (polozenie_napisu.y <= 0 && !na_dole && distance >= boss_fight_distance - dlugosc_trwania_znaku && !po_bossie)
             {
                 if (polozenie_napisu.y == 0)
                 {
@@ -821,7 +924,7 @@ int main()
 
             // trzęsienie się ziemi
             int klatki_trzensienie_ziemi = (animacja + 1) % 24;
-            if (distance >= boss_fight_distance - dlugosc_trzensienia_ziemi && (!szkielet.czy_jest_zatrzymany || !duch.czy_jest_zatrzymany || !szczur.czy_jest_zatrzymany || !bat.czy_jest_zatrzymany))
+            if (distance >= boss_fight_distance - dlugosc_trzensienia_ziemi && (!szkielet.czy_jest_zatrzymany || !duch.czy_jest_zatrzymany || !szczur.czy_jest_zatrzymany || !bat.czy_jest_zatrzymany) && !po_bossie)
             {
                 if (klatki_trzensienie_ziemi < 6)
                 {
@@ -933,6 +1036,7 @@ int main()
             {
                 kusza_item.polozenie.x = pozycjaX_kuszy(gen);
                 Hit_box_kusza.x = offsetXkusza;
+
                 kusza_item.czy_podniesiona = false;
             }
 
@@ -965,7 +1069,7 @@ int main()
 
             // upewnianie sie ze nie wygeneruja sie zablisko
             // reset loops
-            if (distance < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss)
+            if ((distance < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
             {
 
                 if (szkielet.polozenie.x < -szkielet_tekstura.width * skalowanie_obrazu_szkieleta)
@@ -1048,7 +1152,7 @@ int main()
                     Hit_box_szczura.y = offsetYszczura;
                 }
             }
-            else
+            else if (!po_bossie)
             {
                 if (szkielet.polozenie.x < -szkielet_tekstura.width * skalowanie_obrazu_szkieleta)
                 {
@@ -1111,7 +1215,7 @@ int main()
                 break;
             }
         }
-        else if (aktualnyStan == GameOver)
+        else if (aktualnyStan == GameOver) // smierc + reset
         {
             animacja++;
             if (CzyKliknietoPrzycisk(btnPowrotMenu))
@@ -1121,6 +1225,9 @@ int main()
                 distance = 0;
                 szkielet.polozenie = polozenie_startowe_szkieleta;
                 Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_szkieleta.x;
+
+                czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
+
 
                 duch.polozenie = polozenie_startowe_ducha;
                 Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
@@ -1153,8 +1260,23 @@ int main()
                 aktualnyStan = MENU;
                 scrollSpeed = 150.0f;
 
-                licznik_klatek_wysuwanie = 0;
-                klatka = 0;
+                // Hit_box_fireball.x = szerokosc_okna/2 + 1000;
+                // Hit_box_fireball.y = wysokosc_okna/2;
+
+
+                distance_dla_fireballa = 0;
+
+                na_dole = false;
+
+                polozenie_startowe_fireballa = polozenie_startowe_fireballa_prawdziwe;
+
+                fireball_przeszkoda.polozenie.x = polozenie_startowe_fireballa.x;
+                fireball_przeszkoda.polozenie.y = polozenie_startowe_fireballa.y;
+
+
+                Hit_box_fireball.x = offsetXfireball;
+                Hit_box_fireball.y = offsetYfireball;
+
 
                 gen.seed(random_device{}());
 
@@ -1162,6 +1284,32 @@ int main()
                 duch.czy_jest_zatrzymany = false;
                 bat.czy_jest_zatrzymany = false;
                 szczur.czy_jest_zatrzymany = false;
+
+                Hit_box_lasera.x = Polozenie_poczatkowe_hitbox_laseru.x;
+                Hit_box_lasera.y = Polozenie_poczatkowe_hitbox_laseru.y;
+
+                czaszka_boss.ilosc_hp = 3;
+
+                kusza_item.polozenie.x = pozycjaX_kuszy(gen);
+
+                Hit_box_kusza.x = offsetXkusza;
+
+                w_trakcie_bossa = false;
+                krencenie_sie = false;
+                czy_powinna_leciec = false;
+                po_bossie = false;
+                licznik_klatek_wysuwanie = 0;
+                klatka = 0;
+                distance_dla_fireballa = 0;
+                animacja_na_7 = 0;
+
+                ucieczka = false;
+                animacja_smierci_czaszki = 0;
+
+                speed_fireballa_krencenie_z = speed_fireballa_krencenie;
+                speed_fireballa_przod_z = speed_fireballa_przod;
+                radiusX_fireball_z = radiusX_fireball;
+                radiusY_fireball_z = radiusY_fireball;
             }
             if (CzyKliknietoPrzycisk(btnPauzaExit))
             {
@@ -1239,6 +1387,12 @@ int main()
                     DrawTextureEx(kusza_item.tekstura, kusza_item.polozenie, 0.5f, skalowanie_obrazu_kuszy, GRAY);
                 }
 
+                // rysowanie bossa w trakcie ucieczki
+                if (ucieczka)
+                {
+                    DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                }
+
                 if (szkielet.czy_jest_zatrzymany && duch.czy_jest_zatrzymany && bat.czy_jest_zatrzymany && szczur.czy_jest_zatrzymany)
                 {
                     int Animacja_lasera = (klatka + 1) % co_ile_laser;
@@ -1294,41 +1448,41 @@ int main()
                     // rysowanie serc bossa
                     if (krencenie_sie)
                     {
-                        int animacja_na_7_serce = (animacja_na_7%70);
+                        int animacja_na_7_serce = (animacja_na_7 % 70);
 
-                        if (czaszka_boss.ilosc_hp == 3) 
+                        if (czaszka_boss.ilosc_hp == 3)
                         {
-                            if(animacja_na_7_serce < 10)
+                            if (animacja_na_7_serce < 10)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*0.9, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*0.9, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa*0.9, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 0.9, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 0.9, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa * 0.9, WHITE);
                             }
-                            else if(animacja_na_7_serce < 20)
+                            else if (animacja_na_7_serce < 20)
                             {
                                 DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
                                 DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
                                 DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
                             }
-                            else if(animacja_na_7_serce < 30)
+                            else if (animacja_na_7_serce < 30)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
                             }
-                            else if(animacja_na_7_serce < 40)
+                            else if (animacja_na_7_serce < 40)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*1.2, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.2, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa*1.2, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 1.2, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.2, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa * 1.2, WHITE);
                             }
-                            else if(animacja_na_7_serce < 50)
+                            else if (animacja_na_7_serce < 50)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_3, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
                             }
-                            else 
+                            else
                             {
                                 DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
                                 DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
@@ -1338,90 +1492,80 @@ int main()
                         }
                         else if (czaszka_boss.ilosc_hp == 2)
                         {
-                            if(animacja_na_7_serce < 10)
+                            if (animacja_na_7_serce < 10)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*0.9, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*0.9, WHITE);
-                               
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 0.9, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 0.9, WHITE);
                             }
-                            else if(animacja_na_7_serce < 20)
+                            else if (animacja_na_7_serce < 20)
                             {
                                 DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
                                 DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
-                               
                             }
-                            else if(animacja_na_7_serce < 30)
+                            else if (animacja_na_7_serce < 30)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                               
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
                             }
-                            else if(animacja_na_7_serce < 40)
+                            else if (animacja_na_7_serce < 40)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*1.2, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.2, WHITE);
-                                
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 1.2, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.2, WHITE);
                             }
-                            else if(animacja_na_7_serce < 50)
+                            else if (animacja_na_7_serce < 50)
                             {
-                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                
+                                DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
                             }
-                            else 
+                            else
                             {
                                 DrawTextureEx(serce_bossa, Polozenie_serca_1, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
                                 DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
-                                
                             }
                             animacja_na_7++;
                         }
                         else if (czaszka_boss.ilosc_hp == 1)
                         {
-                            if(animacja_na_7_serce < 10)
+                            if (animacja_na_7_serce < 10)
                             {
-                                
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*0.9, WHITE);
-                                
+
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 0.9, WHITE);
                             }
-                            else if(animacja_na_7_serce < 20)
+                            else if (animacja_na_7_serce < 20)
                             {
-                               
+
                                 DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
-                                
                             }
-                            else if(animacja_na_7_serce < 30)
+                            else if (animacja_na_7_serce < 30)
                             {
-                                
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                                
+
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
                             }
-                            else if(animacja_na_7_serce < 40)
+                            else if (animacja_na_7_serce < 40)
                             {
-                                
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.2, WHITE);
-                               
+
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.2, WHITE);
                             }
-                            else if(animacja_na_7_serce < 50)
+                            else if (animacja_na_7_serce < 50)
                             {
-                                
-                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa*1.1, WHITE);
-                               
+
+                                DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa * 1.1, WHITE);
                             }
-                            else 
+                            else
                             {
-                               
+
                                 DrawTextureEx(serce_bossa, Polozenie_serca_2, 0.0f, skalowanie_obrazu_serca_bossa, WHITE);
-                                
                             }
                             animacja_na_7++;
                         }
                     }
 
-
                     if (aktualnyStan != PAUZA)
                     {
-                        klatka++;
+                        if (w_trakcie_bossa)
+                        {
+                            klatka++;
+                        }
                     }
                     // rysowanie fireballa
                     if (krencenie_sie)
@@ -1581,6 +1725,8 @@ int main()
 
             DrawText("POZIOM 1", 10, 10, 20, GRAY);
             DrawText(TextFormat("DYSTANS: %05d", distance), szerokosc_okna - 200, 10, 20, GRAY);
+
+            //DrawText(TextFormat("DYSTANS: %lf", fireball_przeszkoda.polozenie.y), szerokosc_okna - 700, 40, 40, GRAY); //usun
             if (aktualnyStan == PAUZA)
             {
                 // Nakładamy lekki przyciemniający filtr na ekran gry
