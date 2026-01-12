@@ -19,7 +19,7 @@
 // wartosci dla okna
 #define wysokosc_okna 720
 #define szerokosc_okna 1280
-#define nazwa_gry_wyswietlana_na_oknie "Nazwa Gry" // to zmienimy jak ustalimy fabule
+#define nazwa_gry_wyswietlana_na_oknie "Dungeon Run" // to zmienimy jak ustalimy fabule
 #define ilosc_fps 120
 
 // uzywam do skalowania grafiki gracza by byla mniejsza
@@ -205,62 +205,7 @@ void UpdateTop10(string nick, int wynik)
 //     };
 // }
 
-void rysowanie_hit_box(Rectangle hitbox, Color kolor)
-{
-    DrawRectangleLines( // rysowanie hit boxów bo je trzeba lekko poprawiać
-        (int)hitbox.x,
-        (int)hitbox.y,
-        (int)hitbox.width,
-        (int)hitbox.height,
-        kolor);
-}
-
-static bool TooCloseX(int x, float otherX, int minDist)
-{
-    return std::abs(x - (int)otherX) < minDist;
-}
-
-static bool TooCloseForSzkielet(int x, int minDist,
-                                const Vector2 &duchPos,
-                                const Vector2 &batPos,
-                                const Vector2 &szczurPos)
-{
-    return TooCloseX(x, duchPos.x, minDist) ||
-           TooCloseX(x, batPos.x, minDist) ||
-           TooCloseX(x, szczurPos.x, minDist);
-}
-
-static bool TooCloseForDuch(int x, int minDist,
-                            const Vector2 &szkieletPos,
-                            const Vector2 &batPos,
-                            const Vector2 &szczurPos)
-{
-    return TooCloseX(x, szkieletPos.x, minDist) ||
-           TooCloseX(x, batPos.x, minDist) ||
-           TooCloseX(x, szczurPos.x, minDist);
-}
-
-static bool TooCloseForBat(int x, int minDist,
-                           const Vector2 &duchPos,
-                           const Vector2 &szkieletPos,
-                           const Vector2 &szczurPos)
-{
-    return TooCloseX(x, duchPos.x, minDist) ||
-           TooCloseX(x, szkieletPos.x, minDist) ||
-           TooCloseX(x, szczurPos.x, minDist);
-}
-
-static bool TooCloseForSzczur(int x, int minDist,
-                              const Vector2 &duchPos,
-                              const Vector2 &szkieletPos,
-                              const Vector2 &batPos)
-{
-    return TooCloseX(x, duchPos.x, minDist) ||
-           TooCloseX(x, szkieletPos.x, minDist) ||
-           TooCloseX(x, batPos.x, minDist);
-}
-
-int zycie = 3;          // ilość serc/gracza
+int zycie = 3; // ilość serc/gracza
 bool trafiony = false;
 int poprzednieZycie = 3;
 bool IsDead = false;
@@ -269,27 +214,23 @@ int distance = 0;
 float animacjaSerceTimer = 0.0f;
 bool animacjaSerceAktywna = false;
 
-
-const float CZAS_ANIMACJI_SERCA = 0.3f; 
+const float CZAS_ANIMACJI_SERCA = 0.3f;
 
 int szerokoscSerca = 65;
 int wysokoscSerca = 65;
-int odstep = 0;              // odstęp między sercami
-int startX = 10;             // lewy margines od ekranu
-int startY = 10; 
+int odstep = 0;  // odstęp między sercami
+int startX = 10; // lewy margines od ekranu
+int startY = 10;
 
-void StartNowejGry() {
-    zycie = 3;                     
-    poprzednieZycie = 3;          
-    trafiony = false;              
-    animacjaSerceAktywna = false; 
-    animacjaSerceTimer = 0.0f;   
-    IsDead = false;                
-                   
+void StartNowejGry()
+{
+    zycie = 3;
+    poprzednieZycie = 3;
+    trafiony = false;
+    animacjaSerceAktywna = false;
+    animacjaSerceTimer = 0.0f;
+    IsDead = false;
 }
-
-
-
 
 int main()
 {
@@ -302,8 +243,18 @@ int main()
     random_device rd;
     mt19937 gen(rd());
 
-    Texture2D background = LoadTexture("assets/background/background_3.png"); // wczytywanie tekstury tła
+    // TŁA I ZMIENNE DO ZMIANY TŁA
+    Texture2D backgroundLochy = LoadTexture("assets/background/lochy.png"); // wczytywanie tekstury tła
+    Texture2D backgroundLas = LoadTexture("assets/background/las.png");
+    Texture2D backgroundBridge = LoadTexture("assets/background/bridge.png");
 
+    Texture2D *tloAktualne = &backgroundLochy;
+    Texture2D *tloNastepne = &backgroundLochy;
+
+    int fazaSwiata = 0; // 0 - lochy, 1 - przejscie do lasu, 2 - las, 3- przejscie do lochow
+    bool transition = false;
+
+    // BOHATER
     Texture2D tekstura_skoku = LoadTexture("assets/bohater/skok.png");
 
     Texture2D tekstura_gracza_1 = LoadTexture("assets/bohater/rycez_1.png"); // zapisywanie tekstury gracza z katalogu assets i pliku gracz_1
@@ -324,8 +275,6 @@ int main()
 
     Texture2D background_menu = LoadTexture("assets/background/background_menu.png");
 
-    Texture2D background_las = LoadTexture("assets/backgournd/las.png");
-
     Texture2D szczur_tekstura = LoadTexture("assets/przeszkody/szczur.png");
 
     Texture2D bat_tekstura = LoadTexture("assets/przeszkody/bat.png");
@@ -344,7 +293,6 @@ int main()
     Texture2D fireball = LoadTexture("assets/Boss/fireball.png");
 
     Texture2D serceTexture = LoadTexture("assets/background/serce.png"); // życie gracza
-
 
     // tekstury przycisków
     Texture2D startText = LoadTexture("assets/przyciski/start.png");
@@ -480,10 +428,6 @@ int main()
 
     int distance = 0; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss_tekstura
 
-    
-    
-
-
     bool startLevelOne = true; // dodanie tektu przy pierwszej zmianie predkosci
     float timer_tekst = 0.0f;
     std::string tekst_fabularny = "Wyruszamy ku przygodzie!"; //  tekst fabularny
@@ -504,7 +448,7 @@ int main()
     float czas_skoku = 0.0f;
     float max_czas_skoku = 1.0f; // tutaj mozna zmieniac czas trwania skoku (w sekundach)
 
-    float szerokosc_tla_przeskalowana = background.width * skalowanie_obrazu_tla;
+    float szerokosc_tla_przeskalowana = backgroundLochy.width * skalowanie_obrazu_tla;
     float scrollingBack = 0.0f;
     float scrollSpeed = 150.00f; // predkosc przesuwania się tła w pikselach na sekunde
 
@@ -533,7 +477,7 @@ int main()
     Rectangle Hit_box_kusza = {offsetXkusza, offsetYkusza, kusza_item.tekstura.width * skalowanie_obrazu_kuszy - 70, kusza_item.tekstura.height * skalowanie_obrazu_kuszy - 70};
 
     // potrzebne zeby sie nie ruszal po smierci
-    
+
     double game_speed_hamowanie[3] = {5 + log(1 + distance / 300)}; // zwiekszanie sie game speedu logarytmicznie zeby nie zaszybko sie zmieniało w predkosc swiatla
 
     // zapisywanie poczatkowych polozeni do resetu po skuciu
@@ -582,11 +526,12 @@ int main()
         if (aktualnyStan == MENU)
         {
             //--- KOD MENU ---
-            if (CzyKliknietoPrzycisk(btnStart) || IsKeyPressed(KEY_ENTER)) {
+            if (CzyKliknietoPrzycisk(btnStart) || IsKeyPressed(KEY_ENTER))
+            {
                 StartNowejGry();
                 aktualnyStan = LEVELONE;
             }
-            
+
             if (CzyKliknietoPrzycisk(btnExit))
                 break; // zamykanie programu
 
@@ -611,7 +556,7 @@ int main()
             }
             IsDead = false;
         }
-        else if (aktualnyStan == LEVELONE)
+        else if (aktualnyStan == LEVELONE || aktualnyStan == LEVELTWO)
         // --- KOD GRY ---
         {
             animacja++;
@@ -673,15 +618,72 @@ int main()
                     }
                     else
                     {
-            if (w_trakcie_bossa)
-            {
-                if (czaszka_boss.laser_on)
-                {
+                        if (w_trakcie_bossa)
+                        {
+                            if (czaszka_boss.laser_on)
+                            {
+                                if (czas_skoku == 0)
+                                {
+                                    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                                    {
+                                        if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_lasera))
+                                        {
+                                            aktualnyStan = GameOver;
+                                            IsDead = true;
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
+                                        {
+                                            trafiony = true;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
+                                    {
+                                        trafiony = true;
+                                    }
+                                }
+                                // jeśli gracz został trafiony, odejmujemy życie
+                                if (trafiony && !animacjaSerceAktywna)
+                                {
+                                    zycie--;                     // odejmujemy życie
+                                    animacjaSerceAktywna = true; // uruchamiamy animację "znikającego serca"
+                                    animacjaSerceTimer = 0.0f;   // reset timera animacji
+                                    trafiony = false;            // reset flagi kolizji
+                                    if (zycie <= 0)
+                                    { // jeśli brak życia, GameOver
+                                        aktualnyStan = GameOver;
+                                        IsDead = true;
+                                    }
+                                }
+
+                                if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
+                                {
+                                    aktualnyStan = GameOver;
+                                    IsDead = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
+                            {
+                                aktualnyStan = GameOver;
+                                IsDead = true;
+                            }
+                        }
+                    }
+
                     if (czas_skoku == 0)
                     {
                         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                         {
-                            if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_lasera))
+                            if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_fireball))
                             {
                                 aktualnyStan = GameOver;
                                 IsDead = true;
@@ -690,34 +692,7 @@ int main()
                         else
                         {
 
-                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
-                        {
-                            trafiony = true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
-                    {
-                       trafiony = true;
-                    }
-                }
-                // jeśli gracz został trafiony, odejmujemy życie
-                if (trafiony && !animacjaSerceAktywna) {
-                    zycie--;                      // odejmujemy życie
-                    animacjaSerceAktywna = true;  // uruchamiamy animację "znikającego serca"
-                    animacjaSerceTimer = 0.0f;    // reset timera animacji
-                    trafiony = false;             // reset flagi kolizji
-                    if (zycie <= 0) {             // jeśli brak życia, GameOver
-                       aktualnyStan = GameOver;
-                       IsDead = true;
-                    }
-                }
-
-                
-
-                            if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
+                            if (CheckCollisionRecs(Hit_box_gracza, Hit_box_fireball))
                             {
                                 aktualnyStan = GameOver;
                                 IsDead = true;
@@ -726,74 +701,44 @@ int main()
                     }
                     else
                     {
-                        if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
+                        if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_fireball))
                         {
                             aktualnyStan = GameOver;
                             IsDead = true;
                         }
                     }
-                }
 
-                if (czas_skoku == 0)
-                {
-                    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                    // sprawdzanie kolizji hit boxu kuszy
+
+                    if (czas_skoku == 0)
                     {
-                        if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_fireball))
+                        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                         {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
+                            if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_kusza))
+                            {
+                                kusza_item.czy_podniesiona = true;
+                                czy_powinna_leciec = true;
+                            }
+                        }
+                        else
+                        {
+
+                            if (CheckCollisionRecs(Hit_box_gracza, Hit_box_kusza))
+                            {
+                                kusza_item.czy_podniesiona = true;
+                                czy_powinna_leciec = true;
+                            }
                         }
                     }
                     else
                     {
-
-                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_fireball))
-                        {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_fireball))
-                    {
-                        aktualnyStan = GameOver;
-                        IsDead = true;
-                    }
-                }
-
-                // sprawdzanie kolizji hit boxu kuszy
-
-                if (czas_skoku == 0)
-                {
-                    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-                    {
-                        if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_kusza))
-                        {
-                            kusza_item.czy_podniesiona = true;
-                            czy_powinna_leciec = true;
-                        }
-                    }
-                    else
-                    {
-
-                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_kusza))
+                        if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_kusza))
                         {
                             kusza_item.czy_podniesiona = true;
                             czy_powinna_leciec = true;
                         }
                     }
                 }
-                else
-                {
-                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_kusza))
-                    {
-                        kusza_item.czy_podniesiona = true;
-                        czy_powinna_leciec = true;
-                    }
-                }
-            }
 
             // poruszanie sie
             float dt = GetFrameTime();
@@ -913,10 +858,16 @@ int main()
                     }
                     animacja_smierci_czaszki++;
                 }
-                if (czaszka_boss.polozenie.x > 1120)
+                if (czaszka_boss.polozenie.x > 1280)
                 {
                     ucieczka = false;
+                    transition = true;
+                    po_bossie = false;
                     czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
+                    if (fazaSwiata == 0)
+                        aktualnyStan = LEVELTWO;
+                    else
+                        aktualnyStan = LEVELONE;
                 }
             }
 
@@ -1053,6 +1004,29 @@ int main()
             if (scrollingBack <= -szerokosc_tla_przeskalowana) //* skalowanie_obrazu_tla) // resetowanie pozycji gry tło wyjdzie poza ekran
             {
                 scrollingBack += szerokosc_tla_przeskalowana;
+
+                // logika podmiany tekstur
+                tloAktualne = tloNastepne; // przesuwamy kolejke tła
+
+                if (transition)
+                {
+                    tloNastepne = &backgroundBridge;
+                    transition = false;
+                }
+                else if (tloAktualne == &backgroundBridge)
+                {
+                    // jesli nie ma przejscia to rysujemy dalej to samo
+                    if (fazaSwiata == 0)
+                    {
+                        tloNastepne = &backgroundLas;
+                        fazaSwiata = 3;
+                    }
+                    else
+                    {
+                        tloNastepne = &backgroundLochy;
+                        fazaSwiata = 1;
+                    }
+                }
             }
 
             float game_speed = 5 + log(1 + distance / 300);
@@ -1284,7 +1258,12 @@ int main()
             if (IsKeyPressed(KEY_ESCAPE))
                 aktualnyStan = LEVELONE;
             if (CzyKliknietoPrzycisk(btnWznow))
-                aktualnyStan = LEVELONE;
+            {
+                if (fazaSwiata = 0)
+                    aktualnyStan = LEVELONE;
+                if (fazaSwiata = 2)
+                    aktualnyStan = LEVELTWO;
+            }
             if (CzyKliknietoPrzycisk(btnPowrotMenu))
             {
                 UpdateTop10(nickname, distance);
@@ -1329,7 +1308,7 @@ int main()
 
                 bat.polozenie = polozenie_startowe_bat;
                 bat.czy_jest_zatrzymany = false;
-                
+
                 szczur.polozenie = polozenie_startowe_szczura;
                 szczur.czy_jest_zatrzymany = false;
 
@@ -1342,7 +1321,7 @@ int main()
                 czaszka_boss.laser_on = false;
                 czaszka_boss.laser_rozgrzewanie = false;
                 czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
-                
+
                 licznik_klatek_wysuwanie = 0;
                 klatka = 0;
                 animacja_smierci_czaszki = 0;
@@ -1352,7 +1331,7 @@ int main()
                 fireball_przeszkoda.polozenie = polozenie_startowe_fireballa_prawdziwe;
                 Hit_box_fireball.x = offsetXfireball;
                 Hit_box_fireball.y = offsetYfireball;
-                
+
                 // Ważne: zresetuj parametry losowe fireballa do bazowych
                 speed_fireballa_krencenie_z = speed_fireballa_krencenie;
                 speed_fireballa_przod_z = speed_fireballa_przod;
@@ -1364,7 +1343,7 @@ int main()
                 czy_powinna_leciec = false;
                 boltT = 0; // reset lotu bełtu
                 kusza_item.polozenie.x = (float)pozycjaX_kuszy(gen);
-                
+
                 polozenie_napisu = poczontkowe_polozenie_napisu;
                 na_dole = false;
                 pozycja_tla_y = -200; // powrót tła na miejsce po trzęsieniu ziemi
@@ -1382,8 +1361,6 @@ int main()
         //--- RYSOWANIE DLA MENU I DLA GRY
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
-        
 
         // -- KOLORY PRZYCISKOW
         Color kolor1btnStart = SKYBLUE;
@@ -1429,10 +1406,11 @@ int main()
         {
             int frameCount = (animacja + 1) % 60;
 
-            for (float x = scrollingBack; x < szerokosc_okna; x += szerokosc_tla_przeskalowana)
-            {
-                DrawTextureEx(background, {x, (float)pozycja_tla_y}, 0.0f, skalowanie_obrazu_tla, WHITE);
-            }
+            // for (float x = scrollingBack; x < szerokosc_okna; x += szerokosc_tla_przeskalowana)
+            //{
+            DrawTextureEx(*tloAktualne, {scrollingBack, (float)pozycja_tla_y}, 0.0f, skalowanie_obrazu_tla, WHITE);
+            DrawTextureEx(*tloNastepne, {scrollingBack + szerokosc_tla_przeskalowana, (float)pozycja_tla_y}, 0.0f, skalowanie_obrazu_tla, WHITE);
+            //}
 
             // rysowanie przeciwników w zależności od tego czy jest boss_tekstura fight czy go niema
 
@@ -1830,36 +1808,33 @@ int main()
                 Color tintPauzaExit = CzyMyszkaNadPrzyciskiem(btnPauzaExit) ? GRAY : LIGHTGRAY;
                 DrawTexturePro(exitText, {0, 0, (float)exitText.width, (float)exitText.height}, btnPauzaExit, {0, 0}, 0.0f, tintPauzaExit);
             }
-            
 
-            
-            for (int i = 0; i < zycie; i++) 
+            for (int i = 0; i < zycie; i++)
             {
                 float alpha = 1.0f; // pełna widoczność
 
                 if (animacjaSerceAktywna)
                 {
-                   float czasNaSerce = animacjaSerceTimer - i * 0.1f;
-                   if (czasNaSerce > 0)
-                   {
-                      alpha = 1.0f - (czasNaSerce / 0.5f);
-                      if (alpha < 0.0f) alpha = 0.0f;
-                   }
+                    float czasNaSerce = animacjaSerceTimer - i * 0.1f;
+                    if (czasNaSerce > 0)
+                    {
+                        alpha = 1.0f - (czasNaSerce / 0.5f);
+                        if (alpha < 0.0f)
+                            alpha = 0.0f;
+                    }
                 }
 
-                 DrawTexturePro(
+                DrawTexturePro(
                     serceTexture,
                     (Rectangle){0, 0, (float)serceTexture.width, (float)serceTexture.height},
                     (Rectangle){
-                       (float)(startX + i * (szerokoscSerca + odstep)),
-                       (float)startY,
-                       (float)szerokoscSerca,
-                       (float)wysokoscSerca
-                    },
-                   (Vector2){0, 0},
-                   0.0f,
-                   Fade(WHITE, alpha)
-                );
+                        (float)(startX + i * (szerokoscSerca + odstep)),
+                        (float)startY,
+                        (float)szerokoscSerca,
+                        (float)wysokoscSerca},
+                    (Vector2){0, 0},
+                    0.0f,
+                    Fade(WHITE, alpha));
             }
 
             // Aktualizacja timera animacji
@@ -1872,8 +1847,6 @@ int main()
                     animacjaSerceTimer = 0.0f;
                 }
             }
-
-
         }
         EndDrawing();
     }
@@ -1882,9 +1855,10 @@ int main()
     UnloadTexture(czaszka);
     UnloadTexture(slizg);
     UnloadTexture(background_menu);
-    UnloadTexture(background_las);
     UnloadTexture(tekstura_skoku);
-    UnloadTexture(background);
+    UnloadTexture(backgroundLochy);
+    UnloadTexture(backgroundLas);
+    UnloadTexture(backgroundBridge);
     UnloadTexture(tekstura_gracza_1);
     UnloadTexture(tekstura_gracza_2);
     UnloadTexture(tekstura_gracza_3);
