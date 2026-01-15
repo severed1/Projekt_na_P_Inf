@@ -47,3 +47,4 @@ game
 # zeby sie nie commitowalo zkompilowany plik c++ 
 
 main
+.DS_Store
