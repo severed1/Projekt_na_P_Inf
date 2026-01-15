@@ -222,15 +222,37 @@ int odstep = 0;  // odstęp między sercami
 int startX = 10; // lewy margines od ekranu
 int startY = 10;
 
+bool gra_wystartowala = false;
+
 void StartNowejGry()
 {
+    trafiony = false;
     zycie = 3;
     poprzednieZycie = 3;
-    trafiony = false;
     animacjaSerceAktywna = false;
     animacjaSerceTimer = 0.0f;
     IsDead = false;
+    gra_wystartowala = false;
+    
+    
 }
+
+void GraczTrafiony()
+{
+    if (!animacjaSerceAktywna) 
+    {
+        zycie--;                    
+        animacjaSerceAktywna = true; 
+        animacjaSerceTimer = 0.0f;   
+        if (zycie <= 0)              
+        {
+            aktualnyStan = GameOver;
+            IsDead = true;
+        }
+    }
+}
+
+
 
 int main()
 {
@@ -530,6 +552,8 @@ int main()
             {
                 StartNowejGry();
                 aktualnyStan = LEVELONE;
+                gra_wystartowala = true;
+                
             }
 
             if (CzyKliknietoPrzycisk(btnExit))
@@ -605,6 +629,18 @@ int main()
                     trafiony = true;
                 }
             }
+            if (trafiony && !animacjaSerceAktywna)
+            {
+                zycie--;                     // odejmujemy życie
+                animacjaSerceAktywna = true; // uruchamiamy animację "znikającego serca"
+                animacjaSerceTimer = 0.0f;   // reset timera animacji
+                trafiony = false;            // reset flagi kolizji
+                if (zycie <= 0)
+                { // jeśli brak życia, GameOver
+                    aktualnyStan = GameOver;
+                    IsDead = true;
+                }
+            }
 
             if (czaszka_boss.laser_on)
                 if (czas_skoku == 0)
@@ -628,8 +664,9 @@ int main()
                                     {
                                         if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_lasera))
                                         {
-                                            aktualnyStan = GameOver;
-                                            IsDead = true;
+                                            //aktualnyStan = GameOver;
+                                            //IsDead = true;
+                                            trafiony = true;
                                         }
                                     }
                                     else
@@ -664,8 +701,9 @@ int main()
 
                                 if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
                                 {
-                                    aktualnyStan = GameOver;
-                                    IsDead = true;
+                                    //aktualnyStan = GameOver;
+                                    //IsDead = true;
+                                    trafiony = true;
                                 }
                             }
                         }
@@ -673,8 +711,9 @@ int main()
                         {
                             if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
                             {
-                                aktualnyStan = GameOver;
-                                IsDead = true;
+                                //aktualnyStan = GameOver;
+                                //IsDead = true;
+                                trafiony = true;
                             }
                         }
                     }
@@ -685,8 +724,9 @@ int main()
                         {
                             if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_fireball))
                             {
-                                aktualnyStan = GameOver;
-                                IsDead = true;
+                                //aktualnyStan = GameOver;
+                                //IsDead = true;
+                                trafiony = true;
                             }
                         }
                         else
@@ -694,19 +734,49 @@ int main()
 
                             if (CheckCollisionRecs(Hit_box_gracza, Hit_box_fireball))
                             {
-                                aktualnyStan = GameOver;
-                                IsDead = true;
+                                //aktualnyStan = GameOver;
+                                //IsDead = true;
+                                trafiony = true;
                             }
                         }
                     }
+                    if (gra_wystartowala && trafiony && !animacjaSerceAktywna)
+                    {
+                        zycie--;                     
+                        animacjaSerceAktywna = true; 
+                        animacjaSerceTimer = 0.0f;   
+                        trafiony = false;            
+                        if (zycie <= 0)
+                        { 
+                             aktualnyStan = GameOver;
+                             IsDead = true;
+                        }
+                    }
+                   
+                    
                     else
                     {
                         if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_fireball))
                         {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
+                            //aktualnyStan = GameOver;
+                            //IsDead = true;
+                            trafiony = true;
                         }
                     }
+                    // jeśli gracz został trafiony, odejmujemy życie
+                    if (gra_wystartowala && trafiony && !animacjaSerceAktywna)
+                    {
+                        zycie--;                     
+                        animacjaSerceAktywna = true; 
+                        animacjaSerceTimer = 0.0f;   
+                        trafiony = false;            
+                        if (zycie <= 0)
+                        { 
+                             aktualnyStan = GameOver;
+                             IsDead = true;
+                        }
+                    }
+                     
 
                     // sprawdzanie kolizji hit boxu kuszy
 
@@ -738,7 +808,9 @@ int main()
                             czy_powinna_leciec = true;
                         }
                     }
+                    
                 }
+                
 
             // poruszanie sie
             float dt = GetFrameTime();
@@ -915,6 +987,7 @@ int main()
                         // do naprawy
                     }
                 }
+                
             }
 
             float t = distance * speed;
@@ -1250,6 +1323,7 @@ int main()
                     szczur.czy_jest_zatrzymany = true;
                 }
             }
+            
 
             max_czas_skoku -= log(2 + distance / 1000) / 100000; // w teori powinno uniknąc to problemów przy zaduzej predkosci przeszkud ale moze to usune potem
         }
@@ -1289,6 +1363,7 @@ int main()
                 timer_tekst = 0;
                 startLevelOne = true;
                 aktualnyStan = CzyKliknietoPrzycisk(btnPowrotMenu) ? MENU : LEVELONE;
+                StartNowejGry();
 
                 // 2. RESET GRACZA
                 polozenie_gracza.y = ziemiaY;
@@ -1356,6 +1431,7 @@ int main()
                 UpdateTop10(nickname, distance);
                 break;
             }
+            
         }
 
         //--- RYSOWANIE DLA MENU I DLA GRY
