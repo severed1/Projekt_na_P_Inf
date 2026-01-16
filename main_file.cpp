@@ -604,7 +604,7 @@ int main()
             {
                 if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                 {
-                    if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_4))
+                    if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_fireball) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_ducha_4))
                     {
                         trafiony = true;
                     }
@@ -612,7 +612,7 @@ int main()
                 else
                 {
 
-                    if (CheckCollisionRecs(Hit_box_gracza, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_4))
+                    if (CheckCollisionRecs(Hit_box_gracza, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza, Hit_box_fireball) || CheckCollisionRecs(Hit_box_gracza, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza, Hit_box_ducha_4))
                     {
                         trafiony = true;
                     }
@@ -620,21 +620,9 @@ int main()
             }
             else
             {
-                if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_4))
+                if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szkieleta) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_fireball) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_szczura) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_bat) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_1) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_2) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_3) || CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_ducha_4))
                 {
                     trafiony = true;
-                }
-            }
-            if (trafiony && !animacjaSerceAktywna)
-            {
-                zycie--;                     // odejmujemy życie
-                animacjaSerceAktywna = true; // uruchamiamy animację "znikającego serca"
-                animacjaSerceTimer = 0.0f;   // reset timera animacji
-                trafiony = false;            // reset flagi kolizji
-                if (zycie <= 0)
-                { // jeśli brak życia, GameOver
-                    aktualnyStan = GameOver;
-                    IsDead = true;
                 }
             }
 
@@ -651,160 +639,34 @@ int main()
                     }
                     else
                     {
-                        if (w_trakcie_bossa)
+                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
                         {
-                            if (czaszka_boss.laser_on)
-                            {
-                                if (czas_skoku == 0)
-                                {
-                                    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-                                    {
-                                        if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_lasera))
-                                        {
-                                            // aktualnyStan = GameOver;
-                                            // IsDead = true;
-                                            trafiony = true;
-                                        }
-                                    }
-                                    else
-                                    {
-
-                                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
-                                        {
-                                            trafiony = true;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
-                                    {
-                                        trafiony = true;
-                                    }
-                                }
-                                // jeśli gracz został trafiony, odejmujemy życie
-                                if (trafiony && !animacjaSerceAktywna)
-                                {
-                                    zycie--;                     // odejmujemy życie
-                                    animacjaSerceAktywna = true; // uruchamiamy animację "znikającego serca"
-                                    animacjaSerceTimer = 0.0f;   // reset timera animacji
-                                    trafiony = false;            // reset flagi kolizji
-                                    if (zycie <= 0)
-                                    { // jeśli brak życia, GameOver
-                                        aktualnyStan = GameOver;
-                                        IsDead = true;
-                                    }
-                                }
-
-                                if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
-                                {
-                                    // aktualnyStan = GameOver;
-                                    // IsDead = true;
-                                    trafiony = true;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
-                            {
-                                // aktualnyStan = GameOver;
-                                // IsDead = true;
-                                trafiony = true;
-                            }
-                        }
-                    }
-
-                    if (czas_skoku == 0)
-                    {
-                        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-                        {
-                            if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_fireball))
-                            {
-                                // aktualnyStan = GameOver;
-                                // IsDead = true;
-                                trafiony = true;
-                            }
-                        }
-                        else
-                        {
-
-                            if (CheckCollisionRecs(Hit_box_gracza, Hit_box_fireball))
-                            {
-                                // aktualnyStan = GameOver;
-                                // IsDead = true;
-                                trafiony = true;
-                            }
-                        }
-                    }
-                    if (gra_wystartowala && trafiony && !animacjaSerceAktywna)
-                    {
-                        zycie--;
-                        animacjaSerceAktywna = true;
-                        animacjaSerceTimer = 0.0f;
-                        trafiony = false;
-                        if (zycie <= 0)
-                        {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
-                        }
-                    }
-
-                    else
-                    {
-                        if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_fireball))
-                        {
-                            // aktualnyStan = GameOver;
-                            // IsDead = true;
                             trafiony = true;
                         }
                     }
-                    // jeśli gracz został trafiony, odejmujemy życie
-                    if (gra_wystartowala && trafiony && !animacjaSerceAktywna)
+                }
+                else
+                {
+                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
                     {
-                        zycie--;
-                        animacjaSerceAktywna = true;
-                        animacjaSerceTimer = 0.0f;
-                        trafiony = false;
-                        if (zycie <= 0)
-                        {
-                            aktualnyStan = GameOver;
-                            IsDead = true;
-                        }
-                    }
-
-                    // sprawdzanie kolizji hit boxu kuszy
-
-                    if (czas_skoku == 0)
-                    {
-                        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-                        {
-                            if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_kusza))
-                            {
-                                kusza_item.czy_podniesiona = true;
-                                czy_powinna_leciec = true;
-                            }
-                        }
-                        else
-                        {
-
-                            if (CheckCollisionRecs(Hit_box_gracza, Hit_box_kusza))
-                            {
-                                kusza_item.czy_podniesiona = true;
-                                czy_powinna_leciec = true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_kusza))
-                        {
-                            kusza_item.czy_podniesiona = true;
-                            czy_powinna_leciec = true;
-                        }
+                        trafiony = true;
                     }
                 }
             }
+
+            if (trafiony && !animacjaSerceAktywna)
+            {
+                zycie--;                     // odejmujemy życie
+                animacjaSerceAktywna = true; // uruchamiamy animację "znikającego serca"
+                animacjaSerceTimer = 0.0f;   // reset timera animacji
+                trafiony = false;            // reset flagi kolizji
+                if (zycie <= 0)
+                { // jeśli brak życia, GameOver
+                    aktualnyStan = GameOver;
+                    IsDead = true;
+                }
+            }
+
             // sprawdzanie hit boxu kuszy
             if (w_trakcie_bossa)
             {
@@ -1460,7 +1322,7 @@ int main()
         else if (aktualnyStan == GameOver) // smierc + reset
         {
             animacja++;
-            if (CzyKliknietoPrzycisk(btnPowrotMenu) || CzyKliknietoPrzycisk(btnWznow))
+            if (CzyKliknietoPrzycisk(btnPowrotMenu) || CzyKliknietoPrzycisk(btnWznow)) //
             {
                 UpdateTop10(nickname, distance);
                 // 1. STATUS I PODSTAWY
@@ -1487,12 +1349,23 @@ int main()
                 duch.polozenie = polozenie_startowe_ducha;
                 duch.czy_jest_zatrzymany = false;
                 Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
+                Hit_box_ducha_1.y = Polozenie_poczatkowe_hitbox_ducha_1.y;
+                Hit_box_ducha_2.x = Polozenie_poczatkowe_hitbox_ducha_2.x;
+                Hit_box_ducha_2.y = Polozenie_poczatkowe_hitbox_ducha_2.y;
+                Hit_box_ducha_3.x = Polozenie_poczatkowe_hitbox_ducha_3.x;
+                Hit_box_ducha_3.y = Polozenie_poczatkowe_hitbox_ducha_3.y;
+                Hit_box_ducha_4.x = Polozenie_poczatkowe_hitbox_ducha_4.x;
+                Hit_box_ducha_4.y = Polozenie_poczatkowe_hitbox_ducha_4.y;
 
                 bat.polozenie = polozenie_startowe_bat;
                 bat.czy_jest_zatrzymany = false;
+                Hit_box_bat.x = Polozenie_poczatkowe_hitbox_bat.x;
+                Hit_box_bat.y = Polozenie_poczatkowe_hitbox_bat.y;
 
                 szczur.polozenie = polozenie_startowe_szczura;
                 szczur.czy_jest_zatrzymany = false;
+                Hit_box_szczura.x = Polozenie_poczatkowe_hitbox_szczura.x;
+                Hit_box_szczura.y = Polozenie_poczatkowe_hitbox_szczura.y;
 
                 // 4. RESET BOSSA I JEGO ATAKÓW (KLUCZOWE!)
                 w_trakcie_bossa = false;
