@@ -156,7 +156,7 @@ bool CzyMyszkaNadPrzyciskiem(Rectangle obszar)
 void UpdateTop10(string nick, int wynik)
 {
     if (nick == "")
-        nick = "Sigma"; // jkak ktos nie poda nicku to ustawiamy bazowo nazwe
+        nick = "Anon"; // jkak ktos nie poda nicku to ustawiamy bazowo nazwe
 
     vector<Rekord> tabela;
 
@@ -266,6 +266,11 @@ int main()
     Texture2D backgroundLochy = LoadTexture("assets/background/lochy.png"); // wczytywanie tekstury tła
     Texture2D backgroundLas = LoadTexture("assets/background/las.png");
     Texture2D backgroundBridge = LoadTexture("assets/background/bridge.png");
+
+    if (backgroundLochy.id == 0 || backgroundLas.id == 0 || backgroundBridge.id == 0)
+    {
+        std::cout << "BŁĄD: Nie znaleziono plików tła!" << std::endl;
+    }
 
     Texture2D *tloAktualne = &backgroundLochy;
     Texture2D *tloNastepne = &backgroundLochy;
@@ -542,6 +547,8 @@ int main()
 
     bool trafiony = false;
 
+    string tekst;
+
     while (!WindowShouldClose()) // utrzymuje okno otwarte i wykonuje polecenie wymagane przy operacji na oknach
     {
         //-- IF DLA POSZCZEGOLNYCH STANOW GRY
@@ -801,10 +808,10 @@ int main()
             }
             if (ucieczka)
             {
-                if (czaszka_boss.polozenie.x <= czaszka_boss_pozycja_poczontokowa.x)
+                if (czaszka_boss.polozenie.x <= 1500)
                 {
                     int animacja_smierci_czaszkai_12 = (animacja_smierci_czaszki + 1) % 12;
-                    czaszka_boss.polozenie.x += 1.2;
+                    czaszka_boss.polozenie.x += 4.0;
                     if (animacja_smierci_czaszkai_12 < 3)
                     {
                         czaszka_boss.polozenie.y += 0.6;
@@ -988,13 +995,17 @@ int main()
                     if (fazaSwiata == 0)
                     {
                         tloNastepne = &backgroundLas;
-                        fazaSwiata = 3;
+                        fazaSwiata = 2;
                     }
                     else
                     {
                         tloNastepne = &backgroundLochy;
-                        fazaSwiata = 1;
+                        fazaSwiata = 0;
                     }
+                }
+                else
+                {
+                    tloNastepne = tloAktualne;
                 }
             }
 
@@ -1339,6 +1350,7 @@ int main()
                 timer_tekst = 0;
                 startLevelOne = true;
                 aktualnyStan = CzyKliknietoPrzycisk(btnPowrotMenu) ? MENU : LEVELONE;
+                fazaSwiata = 0;
                 StartNowejGry();
 
                 // 2. RESET GRACZA
@@ -1432,14 +1444,6 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        // -- KOLORY PRZYCISKOW
-        // Color kolor1btnStart = SKYBLUE;
-        // Color kolor2btnStart = DARKBLUE;
-        // Color kolor1btnMenu = GRAY;
-        // Color kolor2btnMenu = DARKGRAY;
-        // Color kolor1btnExit = RED;
-        // Color kolor2btnExit = DARKBROWN;
-
         if (aktualnyStan == MENU)
         {
 
@@ -1472,15 +1476,13 @@ int main()
             }
             plikPokaz.close();
         }
-        else if (aktualnyStan == LEVELONE || aktualnyStan == PAUZA || aktualnyStan == GameOver) // gre rysujemy nawet jak jestesmy w pauzie
+        else if (aktualnyStan == LEVELONE || aktualnyStan == LEVELTWO || aktualnyStan == PAUZA || aktualnyStan == GameOver) // gre rysujemy nawet jak jestesmy w pauzie
         {
             int frameCount = (animacja + 1) % 60;
 
-            // for (float x = scrollingBack; x < szerokosc_okna; x += szerokosc_tla_przeskalowana)
-            //{
-            DrawTextureEx(*tloAktualne, {scrollingBack, (float)pozycja_tla_y}, 0.0f, skalowanie_obrazu_tla, WHITE);
-            DrawTextureEx(*tloNastepne, {scrollingBack + szerokosc_tla_przeskalowana, (float)pozycja_tla_y}, 0.0f, skalowanie_obrazu_tla, WHITE);
-            //}
+            // RYSOWANIE TŁA
+            DrawTextureEx(*tloAktualne, {scrollingBack, (float)pozycja_tla_y + 50}, 0.0f, skalowanie_obrazu_tla, WHITE);
+            DrawTextureEx(*tloNastepne, {scrollingBack + szerokosc_tla_przeskalowana, (float)pozycja_tla_y + 50}, 0.0f, skalowanie_obrazu_tla, WHITE);
 
             // rysowanie przeciwników w zależności od tego czy jest boss_tekstura fight czy go niema
 
@@ -1832,8 +1834,17 @@ int main()
                 timer_tekst -= GetFrameTime();
             }
 
-            DrawTextEx(font, "Dungeons", {10, 10}, 30, 3, GRAY);
+            if (fazaSwiata == 0)
+            {
+                tekst = "Dungeons";
+            }
+            else if (fazaSwiata == 2)
+            {
+                tekst = "Forest";
+            }
+            DrawTextEx(font, tekst.c_str(), {10, 10}, 30, 3, GRAY);
             DrawTextEx(font, TextFormat("DYSTANS: %05d", distance), {szerokosc_okna - 200, 10}, 30, 3, GRAY);
+            DrawText(TextFormat("Faza: %d | Transition: %d", fazaSwiata, transition), 10, 100, 20, RED);
 
             if (aktualnyStan == PAUZA)
             {
