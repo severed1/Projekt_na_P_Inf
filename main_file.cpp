@@ -15,6 +15,7 @@
 #include <random>
 #include <cstdlib>
 #include "hitboxes.cpp"
+#include <algorithm>
 
 // wartosci dla okna
 #define wysokosc_okna 720
@@ -147,7 +148,7 @@ bool CzyKliknietoPrzycisk(Rectangle obszar)
 // uniwersalna funkcja sprawdzajaca czy nad przyciskienm znajduje sie myszka
 bool CzyMyszkaNadPrzyciskiem(Rectangle obszar)
 {
-    Vector2 myszka = GetMousePosition();
+    // Vector2 myszka = GetMousePosition();
     return CheckCollisionPointRec(GetMousePosition(), obszar);
 }
 
@@ -233,26 +234,22 @@ void StartNowejGry()
     animacjaSerceTimer = 0.0f;
     IsDead = false;
     gra_wystartowala = false;
-    
-    
 }
 
 void GraczTrafiony()
 {
-    if (!animacjaSerceAktywna) 
+    if (!animacjaSerceAktywna)
     {
-        zycie--;                    
-        animacjaSerceAktywna = true; 
-        animacjaSerceTimer = 0.0f;   
-        if (zycie <= 0)              
+        zycie--;
+        animacjaSerceAktywna = true;
+        animacjaSerceTimer = 0.0f;
+        if (zycie <= 0)
         {
             aktualnyStan = GameOver;
             IsDead = true;
         }
     }
 }
-
-
 
 int main()
 {
@@ -457,7 +454,7 @@ int main()
     //---ZMIENNE DO TABELI WYNIKOW I NICKU GRACZA
     char nickname[16] = "\0"; // tablica na nick (15znakow)
     int charCount = 0;
-    int highScore = 0;
+    // int highScore = 0;
 
     // wartości dla postaci
     float polozenie_gracza_x = 20;
@@ -481,7 +478,7 @@ int main()
     Rectangle Hit_box_gracza_slizg = {polozenie_gracza.x + 150 * skalowanie_obrazu_gracza, polozenie_gracza.y + 600 * skalowanie_obrazu_gracza, slizg.width * skalowanie_obrazu_gracza - 100, slizg.height * skalowanie_obrazu_gracza - 140};
 
     Rectangle Hit_box_szkieleta = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 360, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
-    Rectangle Hit_box_szkieleta_nogi = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 320, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
+    // Rectangle Hit_box_szkieleta_nogi = {szkielet.polozenie.x + 30, szkielet.polozenie.y + 48, szkielet.tekstura.width * skalowanie_obrazu_szkieleta - 320, szkielet.tekstura.height * skalowanie_obrazu_szkieleta - 300};
 
     Rectangle Hit_box_ducha_1 = {duch.polozenie.x + 30, offsetYducha_1, duch.tekstura.height * skalowanie_obrazu_duch, duch.tekstura.width * skalowanie_obrazu_duch - 60};
     Rectangle Hit_box_ducha_2 = {offsetXducha_2, offsetYducha_2, duch.tekstura.height * skalowanie_obrazu_duch + 30, duch.tekstura.width * skalowanie_obrazu_duch - 35};
@@ -500,7 +497,7 @@ int main()
 
     // potrzebne zeby sie nie ruszal po smierci
 
-    double game_speed_hamowanie[3] = {5 + log(1 + distance / 300)}; // zwiekszanie sie game speedu logarytmicznie zeby nie zaszybko sie zmieniało w predkosc swiatla
+    double game_speed_hamowanie[4] = {5 + log(1 + distance / 300)}; // zwiekszanie sie game speedu logarytmicznie zeby nie zaszybko sie zmieniało w predkosc swiatla
 
     // zapisywanie poczatkowych polozeni do resetu po skuciu
     Vector2 Polozenie_poczatkowe_hitbox_gracza = {Hit_box_gracza.x, Hit_box_gracza.y};
@@ -516,7 +513,7 @@ int main()
 
     Vector2 Polozenie_poczatkowe_hitbox_laseru = {Hit_box_lasera.x, Hit_box_lasera.y};
 
-    Vector2 Polozenie_poczatkowe_hitbox_fireballa = {Hit_box_fireball.x, Hit_box_fireball.y};
+    // Vector2 Polozenie_poczatkowe_hitbox_fireballa = {Hit_box_fireball.x, Hit_box_fireball.y};
 
     float przesuniecie = 30.0f;
     Vector2 Polozenie_bolt = {100, wysokosc_okna / 2 + 100};
@@ -553,7 +550,6 @@ int main()
                 StartNowejGry();
                 aktualnyStan = LEVELONE;
                 gra_wystartowala = true;
-                
             }
 
             if (CzyKliknietoPrzycisk(btnExit))
@@ -643,6 +639,7 @@ int main()
             }
 
             if (czaszka_boss.laser_on)
+            {
                 if (czas_skoku == 0)
                 {
                     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
@@ -664,8 +661,8 @@ int main()
                                     {
                                         if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_lasera))
                                         {
-                                            //aktualnyStan = GameOver;
-                                            //IsDead = true;
+                                            // aktualnyStan = GameOver;
+                                            // IsDead = true;
                                             trafiony = true;
                                         }
                                     }
@@ -701,8 +698,8 @@ int main()
 
                                 if (CheckCollisionRecs(Hit_box_gracza, Hit_box_lasera))
                                 {
-                                    //aktualnyStan = GameOver;
-                                    //IsDead = true;
+                                    // aktualnyStan = GameOver;
+                                    // IsDead = true;
                                     trafiony = true;
                                 }
                             }
@@ -711,8 +708,8 @@ int main()
                         {
                             if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_lasera))
                             {
-                                //aktualnyStan = GameOver;
-                                //IsDead = true;
+                                // aktualnyStan = GameOver;
+                                // IsDead = true;
                                 trafiony = true;
                             }
                         }
@@ -724,8 +721,8 @@ int main()
                         {
                             if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_fireball))
                             {
-                                //aktualnyStan = GameOver;
-                                //IsDead = true;
+                                // aktualnyStan = GameOver;
+                                // IsDead = true;
                                 trafiony = true;
                             }
                         }
@@ -734,49 +731,47 @@ int main()
 
                             if (CheckCollisionRecs(Hit_box_gracza, Hit_box_fireball))
                             {
-                                //aktualnyStan = GameOver;
-                                //IsDead = true;
+                                // aktualnyStan = GameOver;
+                                // IsDead = true;
                                 trafiony = true;
                             }
                         }
                     }
                     if (gra_wystartowala && trafiony && !animacjaSerceAktywna)
                     {
-                        zycie--;                     
-                        animacjaSerceAktywna = true; 
-                        animacjaSerceTimer = 0.0f;   
-                        trafiony = false;            
+                        zycie--;
+                        animacjaSerceAktywna = true;
+                        animacjaSerceTimer = 0.0f;
+                        trafiony = false;
                         if (zycie <= 0)
-                        { 
-                             aktualnyStan = GameOver;
-                             IsDead = true;
+                        {
+                            aktualnyStan = GameOver;
+                            IsDead = true;
                         }
                     }
-                   
-                    
+
                     else
                     {
                         if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_fireball))
                         {
-                            //aktualnyStan = GameOver;
-                            //IsDead = true;
+                            // aktualnyStan = GameOver;
+                            // IsDead = true;
                             trafiony = true;
                         }
                     }
                     // jeśli gracz został trafiony, odejmujemy życie
                     if (gra_wystartowala && trafiony && !animacjaSerceAktywna)
                     {
-                        zycie--;                     
-                        animacjaSerceAktywna = true; 
-                        animacjaSerceTimer = 0.0f;   
-                        trafiony = false;            
+                        zycie--;
+                        animacjaSerceAktywna = true;
+                        animacjaSerceTimer = 0.0f;
+                        trafiony = false;
                         if (zycie <= 0)
-                        { 
-                             aktualnyStan = GameOver;
-                             IsDead = true;
+                        {
+                            aktualnyStan = GameOver;
+                            IsDead = true;
                         }
                     }
-                     
 
                     // sprawdzanie kolizji hit boxu kuszy
 
@@ -808,9 +803,42 @@ int main()
                             czy_powinna_leciec = true;
                         }
                     }
-                    
                 }
-                
+            }
+            // sprawdzanie hit boxu kuszy
+            if (w_trakcie_bossa)
+            {
+                // sprawdzanie kolizji hit boxu kuszy
+
+                if (czas_skoku == 0)
+                {
+                    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                    {
+                        if (CheckCollisionRecs(Hit_box_gracza_slizg, Hit_box_kusza))
+                        {
+                            kusza_item.czy_podniesiona = true;
+                            czy_powinna_leciec = true;
+                        }
+                    }
+                    else
+                    {
+
+                        if (CheckCollisionRecs(Hit_box_gracza, Hit_box_kusza))
+                        {
+                            kusza_item.czy_podniesiona = true;
+                            czy_powinna_leciec = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (CheckCollisionRecs(Hit_box_gracza_w_skoku, Hit_box_kusza))
+                    {
+                        kusza_item.czy_podniesiona = true;
+                        czy_powinna_leciec = true;
+                    }
+                }
+            }
 
             // poruszanie sie
             float dt = GetFrameTime();
@@ -987,7 +1015,6 @@ int main()
                         // do naprawy
                     }
                 }
-                
             }
 
             float t = distance * speed;
@@ -1051,7 +1078,7 @@ int main()
             }
 
             // skakanie
-            if (IsKeyDown(KEY_SPACE) && czas_skoku <= 0 || IsKeyDown(KEY_W) && czas_skoku <= 0 || IsKeyDown(KEY_UP) && czas_skoku <= 0)
+            if ((IsKeyDown(KEY_SPACE) && czas_skoku <= 0) || (IsKeyDown(KEY_W) && czas_skoku <= 0) || (IsKeyDown(KEY_UP) && czas_skoku <= 0))
             {
                 czas_skoku = 0.001f; // zaczynamy skok
             }
@@ -1112,9 +1139,10 @@ int main()
             uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
             uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
 
+            double gs = 5.0 + log(1.0 + distance / 300.0);
             for (int i = 0; i < 4; i++)
             {
-                game_speed_hamowanie[i] = {5 + log(1 + distance / 300)};
+                game_speed_hamowanie[i] = gs;
             }
             // latanie ducha
             duch.polozenie.y += 2 * sin(distance / 20);
@@ -1200,85 +1228,165 @@ int main()
             // reset loops
             if ((distance < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
             {
+                constexpr int max_ilosc_prob = 200;
 
-                if (szkielet.polozenie.x < -szkielet_tekstura.width * skalowanie_obrazu_szkieleta)
+                if ((distance < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
                 {
-                    int x;
-                    do
+                    if (szkielet.polozenie.x < -szkielet_tekstura.width * skalowanie_obrazu_szkieleta)
                     {
-                        if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                        int x = 0;
+                        bool znaleziono = false;
+
+                        for (int pruby = 0; pruby < max_ilosc_prob; ++pruby)
+                        {
+                            if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                                x = pozycja_czenste(gen);
+                            else
+                                x = pozycjaX(gen);
+
+                            if (!TooCloseForSzkielet(x, minDist, duch.polozenie, bat.polozenie, szczur.polozenie))
+                            {
+                                znaleziono = true;
+                                break;
+                            }
+                        }
+
+                        if (!znaleziono)
+                        {
+                            float relaxed = minDist * 0.5f;
+                            for (int pruby = 0; pruby < 50; ++pruby)
+                            {
+                                if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                                    x = pozycja_czenste(gen);
+                                else
+                                    x = pozycjaX(gen);
+
+                                if (!TooCloseForSzkielet(x, relaxed, duch.polozenie, bat.polozenie, szczur.polozenie))
+                                    break;
+                            }
+                        }
+
+                        szkielet.polozenie.x = (float)x;
+                        Hit_box_szkieleta.x = szkielet.polozenie.x + 30;
+                    }
+
+                    if (duch.polozenie.x < -duch_tekstura.width * skalowanie_obrazu_szkieleta)
+                    {
+                        int x = 0;
+                        bool znaleziono = false;
+
+                        for (int pruby = 0; pruby < max_ilosc_prob; ++pruby)
+                        {
+                            if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                                x = pozycja_czenste(gen);
+                            else
+                                x = pozycjaX(gen);
+
+                            if (!TooCloseForDuch(x, minDist, szkielet.polozenie, bat.polozenie, szczur.polozenie))
+                            {
+                                znaleziono = true;
+                                break;
+                            }
+                        }
+
+                        if (!znaleziono)
+                        {
+                            float relaxed = minDist * 0.5f;
+                            for (int pruby = 0; pruby < 50; ++pruby)
+                            {
+                                if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                                    x = pozycja_czenste(gen);
+                                else
+                                    x = pozycjaX(gen);
+
+                                if (!TooCloseForDuch(x, relaxed, szkielet.polozenie, bat.polozenie, szczur.polozenie))
+                                    break;
+                            }
+                        }
+
+                        duch.polozenie.x = (float)x;
+
+                        Hit_box_ducha_1.x = duch.polozenie.x + 30;
+                        Hit_box_ducha_2.x = offsetXducha_2;
+                        Hit_box_ducha_3.x = offsetXducha_3;
+                        Hit_box_ducha_4.x = offsetXducha_4;
+
+                        duch.polozenie.y = pozycjay_wysoki(gen);
+
+                        Hit_box_ducha_1.y = offsetYducha_1;
+                        Hit_box_ducha_2.y = offsetYducha_2;
+                        Hit_box_ducha_3.y = offsetYducha_3;
+                        Hit_box_ducha_4.y = offsetYducha_4;
+                    }
+
+                    if (bat.polozenie.x < -bat_tekstura.width * skalowanie_obrazu_bat)
+                    {
+                        int x = 0;
+                        bool znaleziono = false;
+
+                        for (int pruby = 0; pruby < max_ilosc_prob; ++pruby)
                         {
                             x = pozycja_czenste(gen);
+
+                            if (!TooCloseForBat(x, minDist, duch.polozenie, szkielet.polozenie, szczur.polozenie))
+                            {
+                                znaleziono = true;
+                                break;
+                            }
                         }
-                        else
+
+                        if (!znaleziono)
+                        {
+                            float relaxed = minDist * 0.5f;
+                            for (int pruby = 0; pruby < 50; ++pruby)
+                            {
+                                x = pozycja_czenste(gen);
+                                if (!TooCloseForBat(x, relaxed, duch.polozenie, szkielet.polozenie, szczur.polozenie))
+                                    break;
+                            }
+                        }
+
+                        bat.polozenie.x = (float)x;
+
+                        Hit_box_bat.x = offsetXbat;
+
+                        bat.polozenie.y = pozycjay_wysoki(gen);
+
+                        Hit_box_bat.y = offsetYbat;
+                    }
+
+                    if (szczur.polozenie.x < -szczur_tekstura.width * skalowanie_obrazu_szczura)
+                    {
+                        int x = 0;
+                        bool znaleziono = false;
+
+                        for (int pruby = 0; pruby < max_ilosc_prob; ++pruby)
                         {
                             x = pozycjaX(gen);
+
+                            if (!TooCloseForSzczur(x, minDist, duch.polozenie, szkielet.polozenie, bat.polozenie))
+                            {
+                                znaleziono = true;
+                                break;
+                            }
                         }
-                    } while (TooCloseForSzkielet(x, minDist, duch.polozenie, bat.polozenie, szczur.polozenie));
 
-                    szkielet.polozenie.x = (float)x;
-                    Hit_box_szkieleta.x = szkielet.polozenie.x + 30;
-                }
-
-                if (duch.polozenie.x < -duch_tekstura.width * skalowanie_obrazu_szkieleta)
-                {
-                    int x;
-                    do
-                    {
-
-                        if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                        if (!znaleziono)
                         {
-                            x = pozycja_czenste(gen);
+                            float relaxed = minDist * 0.5f;
+                            for (int pruby = 0; pruby < 50; ++pruby)
+                            {
+                                x = pozycjaX(gen);
+                                if (!TooCloseForSzczur(x, relaxed, duch.polozenie, szkielet.polozenie, bat.polozenie))
+                                    break;
+                            }
                         }
-                        else
-                        {
-                            x = pozycjaX(gen);
-                        }
-                    } while (TooCloseForDuch(x, minDist, szkielet.polozenie, bat.polozenie, szczur.polozenie));
 
-                    duch.polozenie.x = (float)x;
+                        szczur.polozenie.x = (float)x;
 
-                    Hit_box_ducha_1.x = duch.polozenie.x + 30;
-                    Hit_box_ducha_2.x = offsetXducha_2;
-                    Hit_box_ducha_3.x = offsetXducha_3;
-                    Hit_box_ducha_4.x = offsetXducha_4;
-
-                    duch.polozenie.y = pozycjay_wysoki(gen);
-
-                    Hit_box_ducha_1.y = offsetYducha_1;
-                    Hit_box_ducha_2.y = offsetYducha_2;
-                    Hit_box_ducha_3.y = offsetYducha_3;
-                    Hit_box_ducha_4.y = offsetYducha_4;
-                }
-
-                if (bat.polozenie.x < -bat_tekstura.width * skalowanie_obrazu_bat)
-                {
-                    int x;
-                    do
-                    {
-                        x = pozycja_czenste(gen);
-                    } while (TooCloseForBat(x, minDist, duch.polozenie, szkielet.polozenie, szczur.polozenie));
-
-                    bat.polozenie.x = (float)x;
-
-                    Hit_box_bat.x = offsetXbat;
-
-                    bat.polozenie.y = pozycjay_wysoki(gen);
-
-                    Hit_box_bat.y = offsetYbat;
-                }
-                if (szczur.polozenie.x < -szczur_tekstura.width * skalowanie_obrazu_szczura)
-                {
-                    int x;
-                    do
-                    {
-                        x = pozycjaX(gen);
-                    } while (TooCloseForSzczur(x, minDist, duch.polozenie, szkielet.polozenie, bat.polozenie));
-
-                    szczur.polozenie.x = (float)x;
-
-                    Hit_box_szczura.x = offsetXszczura; // dopasuj offset
-                    Hit_box_szczura.y = offsetYszczura;
+                        Hit_box_szczura.x = offsetXszczura; // dopasuj offset
+                        Hit_box_szczura.y = offsetYszczura;
+                    }
                 }
             }
             else if (!po_bossie)
@@ -1323,7 +1431,6 @@ int main()
                     szczur.czy_jest_zatrzymany = true;
                 }
             }
-            
 
             max_czas_skoku -= log(2 + distance / 1000) / 100000; // w teori powinno uniknąc to problemów przy zaduzej predkosci przeszkud ale moze to usune potem
         }
@@ -1333,9 +1440,9 @@ int main()
                 aktualnyStan = LEVELONE;
             if (CzyKliknietoPrzycisk(btnWznow))
             {
-                if (fazaSwiata = 0)
+                if (fazaSwiata == 0) // bylo jedno i kompilator sie buntowal
                     aktualnyStan = LEVELONE;
-                if (fazaSwiata = 2)
+                if (fazaSwiata == 2) // bylo jedno = i kompilator sie buntowal
                     aktualnyStan = LEVELTWO;
             }
             if (CzyKliknietoPrzycisk(btnPowrotMenu))
@@ -1431,7 +1538,6 @@ int main()
                 UpdateTop10(nickname, distance);
                 break;
             }
-            
         }
 
         //--- RYSOWANIE DLA MENU I DLA GRY
@@ -1439,12 +1545,12 @@ int main()
         ClearBackground(RAYWHITE);
 
         // -- KOLORY PRZYCISKOW
-        Color kolor1btnStart = SKYBLUE;
-        Color kolor2btnStart = DARKBLUE;
-        Color kolor1btnMenu = GRAY;
-        Color kolor2btnMenu = DARKGRAY;
-        Color kolor1btnExit = RED;
-        Color kolor2btnExit = DARKBROWN;
+        // Color kolor1btnStart = SKYBLUE;
+        // Color kolor2btnStart = DARKBLUE;
+        // Color kolor1btnMenu = GRAY;
+        // Color kolor2btnMenu = DARKGRAY;
+        // Color kolor1btnExit = RED;
+        // Color kolor2btnExit = DARKBROWN;
 
         if (aktualnyStan == MENU)
         {
@@ -1787,35 +1893,35 @@ int main()
             }
 
             // rysowanie hit box do debugowania i dostoswywania
-            // if (czas_skoku == 0)
-            // {
-            //     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-            //     {
-            //         rysowanie_hit_box(Hit_box_gracza_slizg, RED);
-            //     }
-            //     else
-            //         rysowanie_hit_box(Hit_box_gracza, RED);
-            // }
-            // else
-            // {
-            //     rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
-            // }
+            if (czas_skoku == 0)
+            {
+                if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                {
+                    rysowanie_hit_box(Hit_box_gracza_slizg, RED);
+                }
+                else
+                    rysowanie_hit_box(Hit_box_gracza, RED);
+            }
+            else
+            {
+                rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
+            }
 
-            // rysowanie_hit_box(Hit_box_szkieleta, GREEN);
-            // rysowanie_hit_box(Hit_box_ducha_1, GREEN);
+            rysowanie_hit_box(Hit_box_szkieleta, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_1, GREEN);
 
-            // rysowanie_hit_box(Hit_box_ducha_2, GREEN);
-            // rysowanie_hit_box(Hit_box_ducha_3, GREEN);
-            // rysowanie_hit_box(Hit_box_ducha_4, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_2, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_3, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_4, GREEN);
 
-            // rysowanie_hit_box(Hit_box_bat, GREEN);
+            rysowanie_hit_box(Hit_box_bat, GREEN);
 
-            // rysowanie_hit_box(Hit_box_szczura, GREEN);
-            // rysowanie_hit_box(Hit_box_lasera, GREEN);
+            rysowanie_hit_box(Hit_box_szczura, GREEN);
+            rysowanie_hit_box(Hit_box_lasera, GREEN);
 
-            // rysowanie_hit_box(Hit_box_fireball, GREEN);
+            rysowanie_hit_box(Hit_box_fireball, GREEN);
 
-            // rysowanie_hit_box(Hit_box_kusza, GREEN);
+            rysowanie_hit_box(Hit_box_kusza, GREEN);
 
             // istotne prosze nie usuwać !!!!
 
