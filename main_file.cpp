@@ -354,6 +354,9 @@ int main()
     Vector2 pozycja_po_wysunieciu;
     bool ucieczka = false;
     int animacja_smierci_czaszki = 0;
+    Vector2 center;
+    static float angle = 0.0f;
+    bool resetFireballCircle = true;
 
     float speed_fireballa_krencenie_z = speed_fireballa_krencenie;
     float speed_fireballa_przod_z = speed_fireballa_przod;
@@ -428,9 +431,9 @@ int main()
     przeszkoda fireball_przeszkoda;
     fireball_przeszkoda.tekstura = fireball;
     fireball_przeszkoda.rodzaj_typu_przeszkody = 6;
-    fireball_przeszkoda.polozenie = {(float)czaszka_boss.polozenie.x - 700, (float)czaszka_boss.polozenie.y + 350}; // problem
+    fireball_przeszkoda.polozenie = {(float)czaszka_boss.polozenie.x - 200, (float)czaszka_boss.polozenie.y + 550}; // problem
     Vector2 polozenie_startowe_fireballa = fireball_przeszkoda.polozenie;
-    Vector2 polozenie_startowe_fireballa_prawdziwe = polozenie_startowe_fireballa;
+    // Vector2 polozenie_startowe_fireballa_prawdziwe = polozenie_startowe_fireballa;
 
     item kusza_item;
     kusza_item.tekstura = kusza;
@@ -512,7 +515,7 @@ int main()
     Vector2 Polozenie_poczatkowe_hitbox_szczura = {Hit_box_szczura.x, Hit_box_szczura.y};
 
     Vector2 Polozenie_poczatkowe_hitbox_laseru = {Hit_box_lasera.x, Hit_box_lasera.y};
-
+    Vector2 Polozenie_poczatkowe_hitbox_fireball = {Hit_box_fireball.x, Hit_box_fireball.y};
     // Vector2 Polozenie_poczatkowe_hitbox_fireballa = {Hit_box_fireball.x, Hit_box_fireball.y};
 
     float przesuniecie = 30.0f;
@@ -834,10 +837,7 @@ int main()
             }
 
             // mechanika działania fireballa
-            static float angle = 0.0f;
             static Vector2 lastCirclePos = {0.0f, 0.0f};
-
-            Vector2 center;
 
             if (w_trakcie_bossa && !czaszka_boss.laser_on && krencenie_sie)
             {
@@ -849,6 +849,13 @@ int main()
                 Vector2 newCirclePos;
                 newCirclePos.x = center.x + cos(angle) * radiusX_fireball_z;
                 newCirclePos.y = center.y + sin(angle) * radiusY_fireball_z;
+
+                if (resetFireballCircle)
+                {
+                    angle = 0.0f; // opcjonalnie, ale bardzo polecam
+                    lastCirclePos = newCirclePos;
+                    resetFireballCircle = false;
+                }
 
                 Vector2 delta;
                 delta.x = newCirclePos.x - lastCirclePos.x;
@@ -1383,9 +1390,15 @@ int main()
 
                 // 5. RESET FIREBALLA I MECHANIKI KOŁA
                 distance_dla_fireballa = 0;
-                fireball_przeszkoda.polozenie = polozenie_startowe_fireballa_prawdziwe;
-                Hit_box_fireball.x = offsetXfireball;
-                Hit_box_fireball.y = offsetYfireball;
+
+                angle = 0.0f;
+
+                resetFireballCircle = true;
+
+                fireball_przeszkoda.polozenie = polozenie_startowe_fireballa;
+
+                Hit_box_fireball.x = Polozenie_poczatkowe_hitbox_fireball.x;
+                Hit_box_fireball.y = Polozenie_poczatkowe_hitbox_fireball.y;
 
                 // Ważne: zresetuj parametry losowe fireballa do bazowych
                 speed_fireballa_krencenie_z = speed_fireballa_krencenie;
@@ -1398,6 +1411,8 @@ int main()
                 czy_powinna_leciec = false;
                 boltT = 0; // reset lotu bełtu
                 kusza_item.polozenie.x = (float)pozycjaX_kuszy(gen);
+                Hit_box_kusza.x = offsetXkusza;
+                Hit_box_kusza.y = offsetYkusza;
 
                 polozenie_napisu = poczontkowe_polozenie_napisu;
                 na_dole = false;
@@ -1766,35 +1781,35 @@ int main()
             }
 
             // rysowanie hit box do debugowania i dostoswywania
-            if (czas_skoku == 0)
-            {
-                if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-                {
-                    rysowanie_hit_box(Hit_box_gracza_slizg, RED);
-                }
-                else
-                    rysowanie_hit_box(Hit_box_gracza, RED);
-            }
-            else
-            {
-                rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
-            }
+            // if (czas_skoku == 0)
+            // {
+            //     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+            //     {
+            //         rysowanie_hit_box(Hit_box_gracza_slizg, RED);
+            //     }
+            //     else
+            //         rysowanie_hit_box(Hit_box_gracza, RED);
+            // }
+            // else
+            // {
+            //     rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
+            // }
 
-            rysowanie_hit_box(Hit_box_szkieleta, GREEN);
-            rysowanie_hit_box(Hit_box_ducha_1, GREEN);
+            // rysowanie_hit_box(Hit_box_szkieleta, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_1, GREEN);
 
-            rysowanie_hit_box(Hit_box_ducha_2, GREEN);
-            rysowanie_hit_box(Hit_box_ducha_3, GREEN);
-            rysowanie_hit_box(Hit_box_ducha_4, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_2, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_3, GREEN);
+            // rysowanie_hit_box(Hit_box_ducha_4, GREEN);
 
-            rysowanie_hit_box(Hit_box_bat, GREEN);
+            // rysowanie_hit_box(Hit_box_bat, GREEN);
 
-            rysowanie_hit_box(Hit_box_szczura, GREEN);
-            rysowanie_hit_box(Hit_box_lasera, GREEN);
+            // rysowanie_hit_box(Hit_box_szczura, GREEN);
+            // rysowanie_hit_box(Hit_box_lasera, GREEN);
 
-            rysowanie_hit_box(Hit_box_fireball, GREEN);
+            // rysowanie_hit_box(Hit_box_fireball, GREEN);
 
-            rysowanie_hit_box(Hit_box_kusza, GREEN);
+            // rysowanie_hit_box(Hit_box_kusza, GREEN);
 
             // istotne prosze nie usuwać !!!!
 
