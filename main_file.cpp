@@ -266,6 +266,7 @@ int main()
     Texture2D backgroundLochy = LoadTexture("assets/background/lochy.png"); // wczytywanie tekstury tła
     Texture2D backgroundLas = LoadTexture("assets/background/las.png");
     Texture2D backgroundBridge = LoadTexture("assets/background/bridge.png");
+    Texture2D backgroundBridge2 = LoadTexture("assets/background/bridge2.png");
 
     if (backgroundLochy.id == 0 || backgroundLas.id == 0 || backgroundBridge.id == 0)
     {
@@ -454,6 +455,7 @@ int main()
     int pozycja_tla_y = -200;
 
     int distance = 0; // zmienna bedzie rosla w trakcie gry jak postac biegnie i przykladowo jak dojdzie do jakiejs wartosci to pojawia sie boss_tekstura
+    int distanceToBoss = 0;
 
     bool startLevelOne = true; // dodanie tektu przy pierwszej zmianie predkosci
     float timer_tekst = 0.0f;
@@ -591,6 +593,12 @@ int main()
         {
             animacja++;
             distance++;
+
+            // dystans do bossa mierzymy oddzielnie niz distance zeby efektywnie go loopować
+            if (!w_trakcie_bossa && !ucieczka && !po_bossie)
+            {
+                distanceToBoss++;
+            }
 
             // --- ustawienie tekstu fabularnego tylko raz ---
             if (startLevelOne)
@@ -835,11 +843,10 @@ int main()
                     ucieczka = false;
                     transition = true;
                     po_bossie = false;
+
+                    distanceToBoss = 0; // resetujemy dystans do bossa
+
                     czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
-                    if (fazaSwiata == 0)
-                        aktualnyStan = LEVELTWO;
-                    else
-                        aktualnyStan = LEVELONE;
                 }
             }
 
@@ -917,7 +924,7 @@ int main()
             }
             // przemieszczanie się napisu
             float speed_napisu = 2.0f;
-            if (polozenie_napisu.y <= 0 && !na_dole && distance >= boss_fight_distance - dlugosc_trwania_znaku && !po_bossie)
+            if (polozenie_napisu.y <= 0 && !na_dole && (distanceToBoss) >= boss_fight_distance - dlugosc_trwania_znaku && !po_bossie)
             {
                 if (polozenie_napisu.y == 0)
                 {
@@ -926,14 +933,14 @@ int main()
 
                 polozenie_napisu.y += speed_napisu;
             }
-            if (na_dole && polozenie_napisu.y >= -napis_o_bossie.height && distance >= boss_fight_distance)
+            if (na_dole && polozenie_napisu.y >= -napis_o_bossie.height && (distanceToBoss + 500) >= boss_fight_distance)
             {
                 polozenie_napisu.y -= speed_napisu;
             }
 
             // trzęsienie się ziemi
             int klatki_trzensienie_ziemi = (animacja + 1) % 24;
-            if (distance >= boss_fight_distance - dlugosc_trzensienia_ziemi && (!szkielet.czy_jest_zatrzymany || !duch.czy_jest_zatrzymany || !szczur.czy_jest_zatrzymany || !bat.czy_jest_zatrzymany) && !po_bossie)
+            if (distanceToBoss >= boss_fight_distance - dlugosc_trzensienia_ziemi && (!szkielet.czy_jest_zatrzymany || !duch.czy_jest_zatrzymany || !szczur.czy_jest_zatrzymany || !bat.czy_jest_zatrzymany) && !po_bossie)
             {
                 if (klatki_trzensienie_ziemi < 6)
                 {
@@ -986,22 +993,28 @@ int main()
 
                 if (transition)
                 {
-                    tloNastepne = &backgroundBridge;
+                    if (fazaSwiata == 0)
+                    {
+                        tloNastepne = &backgroundBridge;
+                    }
+                    else if (fazaSwiata == 2)
+                    {
+                        tloNastepne = &backgroundBridge2;
+                    }
                     transition = false;
                 }
                 else if (tloAktualne == &backgroundBridge)
                 {
                     // jesli nie ma przejscia to rysujemy dalej to samo
-                    if (fazaSwiata == 0)
-                    {
-                        tloNastepne = &backgroundLas;
-                        fazaSwiata = 2;
-                    }
-                    else
-                    {
-                        tloNastepne = &backgroundLochy;
-                        fazaSwiata = 0;
-                    }
+                    tloNastepne = &backgroundLas;
+                    fazaSwiata = 2;
+                    aktualnyStan = LEVELTWO;
+                }
+                else if (tloAktualne == &backgroundBridge2)
+                {
+                    tloNastepne = &backgroundLochy;
+                    fazaSwiata = 0;
+                    aktualnyStan = LEVELONE;
                 }
                 else
                 {
@@ -1106,11 +1119,11 @@ int main()
 
             // upewnianie sie ze nie wygeneruja sie zablisko
             // reset loops
-            if ((distance < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
+            if ((distanceToBoss < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
             {
                 constexpr int max_ilosc_prob = 200;
 
-                if ((distance < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
+                if ((distanceToBoss < boss_fight_distance - dystans_do_zatrzymania_przeszkud_gdy_boss) || po_bossie)
                 {
                     if (szkielet.polozenie.x < -szkielet_tekstura.width * skalowanie_obrazu_szkieleta)
                     {
@@ -1119,7 +1132,7 @@ int main()
 
                         for (int pruby = 0; pruby < max_ilosc_prob; ++pruby)
                         {
-                            if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                            if (distanceToBoss >= boss_fight_distance - 1000 && distanceToBoss <= boss_fight_distance)
                                 x = pozycja_czenste(gen);
                             else
                                 x = pozycjaX(gen);
@@ -1136,7 +1149,7 @@ int main()
                             float relaxed = minDist * 0.5f;
                             for (int pruby = 0; pruby < 50; ++pruby)
                             {
-                                if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                                if (distanceToBoss >= boss_fight_distance - 1000 && distanceToBoss <= boss_fight_distance)
                                     x = pozycja_czenste(gen);
                                 else
                                     x = pozycjaX(gen);
@@ -1157,7 +1170,7 @@ int main()
 
                         for (int pruby = 0; pruby < max_ilosc_prob; ++pruby)
                         {
-                            if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                            if (distanceToBoss >= boss_fight_distance - 1000 && distanceToBoss <= boss_fight_distance)
                                 x = pozycja_czenste(gen);
                             else
                                 x = pozycjaX(gen);
@@ -1174,7 +1187,7 @@ int main()
                             float relaxed = minDist * 0.5f;
                             for (int pruby = 0; pruby < 50; ++pruby)
                             {
-                                if (distance >= boss_fight_distance - 1000 && distance <= boss_fight_distance)
+                                if (distanceToBoss >= boss_fight_distance - 1000 && distanceToBoss <= boss_fight_distance)
                                     x = pozycja_czenste(gen);
                                 else
                                     x = pozycjaX(gen);
@@ -1328,8 +1341,98 @@ int main()
             if (CzyKliknietoPrzycisk(btnPowrotMenu))
             {
                 UpdateTop10(nickname, distance);
+                // 1. STATUS I PODSTAWY
+                IsDead = false;
                 distance = 0;
-                aktualnyStan = MENU;
+                distanceToBoss = 0;
+                scrollSpeed = 150.0f;
+                timer_tekst = 0;
+                startLevelOne = true;
+                tloAktualne = &backgroundLochy;
+                tloNastepne = &backgroundLochy;
+                aktualnyStan = CzyKliknietoPrzycisk(btnPowrotMenu) ? MENU : LEVELONE;
+                fazaSwiata = 0;
+                StartNowejGry();
+
+                // 2. RESET GRACZA
+                polozenie_gracza.y = ziemiaY;
+                czas_skoku = 0;
+                max_czas_skoku = 1.0f;
+                Hit_box_gracza.y = Polozenie_poczatkowe_hitbox_gracza.y;
+                Hit_box_gracza_w_skoku.y = Polozenie_poczatkowe_hitbox_gracza_w_skoku.y;
+
+                // 3. RESET STANDARDOWYCH PRZESZKÓD
+                szkielet.polozenie = polozenie_startowe_szkieleta;
+                szkielet.czy_jest_zatrzymany = false;
+                Hit_box_szkieleta.x = Polozenie_poczatkowe_hitbox_szkieleta.x;
+
+                duch.polozenie = polozenie_startowe_ducha;
+                duch.czy_jest_zatrzymany = false;
+                Hit_box_ducha_1.x = Polozenie_poczatkowe_hitbox_ducha_1.x;
+                Hit_box_ducha_1.y = Polozenie_poczatkowe_hitbox_ducha_1.y;
+                Hit_box_ducha_2.x = Polozenie_poczatkowe_hitbox_ducha_2.x;
+                Hit_box_ducha_2.y = Polozenie_poczatkowe_hitbox_ducha_2.y;
+                Hit_box_ducha_3.x = Polozenie_poczatkowe_hitbox_ducha_3.x;
+                Hit_box_ducha_3.y = Polozenie_poczatkowe_hitbox_ducha_3.y;
+                Hit_box_ducha_4.x = Polozenie_poczatkowe_hitbox_ducha_4.x;
+                Hit_box_ducha_4.y = Polozenie_poczatkowe_hitbox_ducha_4.y;
+
+                bat.polozenie = polozenie_startowe_bat;
+                bat.czy_jest_zatrzymany = false;
+                Hit_box_bat.x = Polozenie_poczatkowe_hitbox_bat.x;
+                Hit_box_bat.y = Polozenie_poczatkowe_hitbox_bat.y;
+
+                szczur.polozenie = polozenie_startowe_szczura;
+                szczur.czy_jest_zatrzymany = false;
+                Hit_box_szczura.x = Polozenie_poczatkowe_hitbox_szczura.x;
+                Hit_box_szczura.y = Polozenie_poczatkowe_hitbox_szczura.y;
+
+                // 4. RESET BOSSA I JEGO ATAKÓW (KLUCZOWE!)
+                w_trakcie_bossa = false;
+                po_bossie = false;
+                ucieczka = false;
+                krencenie_sie = false;
+                czaszka_boss.ilosc_hp = 3;
+                czaszka_boss.laser_on = false;
+                czaszka_boss.laser_rozgrzewanie = false;
+                czaszka_boss.polozenie = czaszka_boss_pozycja_poczontokowa;
+
+                licznik_klatek_wysuwanie = 0;
+                klatka = 0;
+                animacja_smierci_czaszki = 0;
+
+                // 5. RESET FIREBALLA I MECHANIKI KOŁA
+                distance_dla_fireballa = 0;
+
+                angle = 0.0f;
+
+                resetFireballCircle = true;
+
+                fireball_przeszkoda.polozenie = polozenie_startowe_fireballa;
+
+                Hit_box_fireball.x = Polozenie_poczatkowe_hitbox_fireball.x;
+                Hit_box_fireball.y = Polozenie_poczatkowe_hitbox_fireball.y;
+
+                // Ważne: zresetuj parametry losowe fireballa do bazowych
+                speed_fireballa_krencenie_z = speed_fireballa_krencenie;
+                speed_fireballa_przod_z = speed_fireballa_przod;
+                radiusX_fireball_z = radiusX_fireball;
+                radiusY_fireball_z = radiusY_fireball;
+
+                // 6. RESET PRZEDMIOTÓW I NAPISÓW
+                kusza_item.czy_podniesiona = false;
+                czy_powinna_leciec = false;
+                boltT = 0; // reset lotu bełtu
+                kusza_item.polozenie.x = (float)pozycjaX_kuszy(gen);
+                Hit_box_kusza.x = offsetXkusza;
+                Hit_box_kusza.y = offsetYkusza;
+
+                polozenie_napisu = poczontkowe_polozenie_napisu;
+                na_dole = false;
+                pozycja_tla_y = -200; // powrót tła na miejsce po trzęsieniu ziemi
+
+                // 7. PONOWNE LOSOWANIE SEEDU
+                gen.seed(rd());
             }
             if (CzyKliknietoPrzycisk(btnPauzaExit))
             {
@@ -1346,9 +1449,12 @@ int main()
                 // 1. STATUS I PODSTAWY
                 IsDead = false;
                 distance = 0;
+                distanceToBoss = 0;
                 scrollSpeed = 150.0f;
                 timer_tekst = 0;
                 startLevelOne = true;
+                tloAktualne = &backgroundLochy;
+                tloNastepne = &backgroundLochy;
                 aktualnyStan = CzyKliknietoPrzycisk(btnPowrotMenu) ? MENU : LEVELONE;
                 fazaSwiata = 0;
                 StartNowejGry();
@@ -1844,7 +1950,7 @@ int main()
             }
             DrawTextEx(font, tekst.c_str(), {10, 10}, 30, 3, GRAY);
             DrawTextEx(font, TextFormat("DYSTANS: %05d", distance), {szerokosc_okna - 200, 10}, 30, 3, GRAY);
-            DrawText(TextFormat("Faza: %d | Transition: %d", fazaSwiata, transition), 10, 100, 20, RED);
+            // DrawText(TextFormat("Faza: %d | Transition: %d", fazaSwiata, transition), 10, 100, 20, RED);
 
             if (aktualnyStan == PAUZA)
             {
