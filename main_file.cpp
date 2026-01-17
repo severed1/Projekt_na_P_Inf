@@ -121,7 +121,9 @@ struct boss
     int ilosc_hp;
     bool laser_on;
     bool laser_rozgrzewanie;
+    
 };
+
 
 // stany gry
 enum StanGry
@@ -254,6 +256,14 @@ void GraczTrafiony()
 int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarach
+    InitAudioDevice(); //włączamy system audio raylib
+    Music music = LoadMusicStream("assets/background/medieval_energetic_loop.wav");// wczytujemy muzykę
+    music.looping = true; //muzyka zapętlona automatycznie
+    PlayMusicStream(music);// start muzyki (odtwarzanie w tle)
+    
+   
+    
+
     SetExitKey(KEY_NULL);                                                      // wylaczamy bazowe zachowanie klawisza esc
     SetTargetFPS(ilosc_fps);                                                   // ustala ilosc docelowa fps w oknie
 
@@ -349,6 +359,7 @@ int main()
 
     // sprawdza czy w trakcie boss_tekstura fightu
     // zmienne dla bossa
+
     bool w_trakcie_bossa = false;
     bool krencenie_sie = false;
     bool czy_powinna_leciec = false;
@@ -550,9 +561,22 @@ int main()
     bool trafiony = false;
 
     string tekst;
+    float powerX = 200;
+float powerY = 200;
+const float powerSize = 15;   // rozmiar kwadratu
+int powerCount = 0;           // ile razy gracz zebrał power-up
+const float playerRadiusForCoins = 20.0f;
+
+// pozycja gracza (przykład)
+float playerX = 400;
+float playerY = 300;
 
     while (!WindowShouldClose()) // utrzymuje okno otwarte i wykonuje polecenie wymagane przy operacji na oknach
     {
+        
+
+        UpdateMusicStream(music);
+       
         //-- IF DLA POSZCZEGOLNYCH STANOW GRY
         if (aktualnyStan == MENU)
         {
@@ -599,6 +623,7 @@ int main()
             {
                 distanceToBoss++;
             }
+
 
             // --- ustawienie tekstu fabularnego tylko raz ---
             if (startLevelOne)
@@ -739,6 +764,8 @@ int main()
                     Polozenie_serca_2.x -= 0.5;
 
                     licznik_klatek_wysuwanie++;
+
+                  
                 }
                 else if (licznik_klatek_wysuwanie <= dlugosc_wysuwania + dlugosc_czekania_az_boss_zaczie_ruszac)
                 {
@@ -756,6 +783,8 @@ int main()
                 po_bossie = true;
 
                 ucieczka = true;
+
+            
 
                 // reset pozycji przeszkud
                 szkielet.polozenie = polozenie_startowe_szkieleta;
@@ -942,6 +971,9 @@ int main()
             int klatki_trzensienie_ziemi = (animacja + 1) % 24;
             if (distanceToBoss >= boss_fight_distance - dlugosc_trzensienia_ziemi && (!szkielet.czy_jest_zatrzymany || !duch.czy_jest_zatrzymany || !szczur.czy_jest_zatrzymany || !bat.czy_jest_zatrzymany) && !po_bossie)
             {
+              
+              
+            
                 if (klatki_trzensienie_ziemi < 6)
                 {
                     pozycja_tla_y -= moc_trznsienia_ziemi;
@@ -1549,7 +1581,7 @@ int main()
         //--- RYSOWANIE DLA MENU I DLA GRY
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
+        
         if (aktualnyStan == MENU)
         {
 
@@ -1616,6 +1648,8 @@ int main()
                     int Animacja_jedzenia = (klatka + 1) % 60;
                     int Animacja_migania_laseru = (klatka + 1) % 9;
                     w_trakcie_bossa = true;
+
+                    
 
                     if (co_ile_laser / 2 <= Animacja_lasera && Animacja_lasera <= co_ile_laser / 2 + wind_up_laseru)
                     {
@@ -2053,7 +2087,9 @@ int main()
     UnloadTexture(szkielet_tekstura_2);
     UnloadTexture(szkielet_tekstura_3);
     UnloadTexture(boss_tekstura_laser_2);
+    UnloadMusicStream(music);
 
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;
