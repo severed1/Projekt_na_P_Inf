@@ -274,7 +274,7 @@ int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarac
     //muzyka
-    //InitAudioDevice(); //włączamy system audio raylib
+    InitAudioDevice(); //włączamy system audio raylib
     Music music = LoadMusicStream("assets/background/medieval_energetic_loop.wav");// wczytujemy muzykę
     music.looping = true; //muzyka zapętlona automatycznie
     PlayMusicStream(music);// start muzyki (odtwarzanie w tle)
@@ -1298,18 +1298,18 @@ float playerY = 300;
                             powerUps[i].polozenie.x -= 150.0f * GetFrameTime();
 
                             Rectangle playerRect = { Hit_box_gracza.x, Hit_box_gracza.y, Hit_box_gracza.width, Hit_box_gracza.height };
-    Rectangle powerRect  = { powerUps[i].polozenie.x - 5, powerUps[i].polozenie.y - 5, powerUps[i].size + 10, powerUps[i].size + 10 };
+                            Rectangle powerRect  = { powerUps[i].polozenie.x - 5, powerUps[i].polozenie.y - 5, powerUps[i].size + 10, powerUps[i].size + 10 };
 
-    if (CheckCollisionRecs(playerRect, powerRect))
-    {
-           // jeśli życie nie jest pełne, dodaj jedno
-        if (zycie < maxZycie) 
-            zycie++;    
-       
+                            if (CheckCollisionRecs(playerRect, powerRect))
+                            {
+                                // jeśli życie nie jest pełne, dodaj jedno
+                                if (zycie < maxZycie) 
+                                    zycie++;    
+                            
 
-        powerUps[i].aktywny = false; // zbieramy monetę
-        continue; // pomijamy resztę, żeby nie sprawdzać pozycję poza ekranem
-    }
+                                powerUps[i].aktywny = false; // zbieramy monetę
+                                continue; // pomijamy resztę, żeby nie sprawdzać pozycję poza ekranem
+                            }
 
                             // jeśli wyleciało poza ekran, zdeaktywuj
                             if (powerUps[i].polozenie.x + powerUps[i].size < 0)
@@ -2045,7 +2045,7 @@ float playerY = 300;
             }
 
             // rysowanie hit box do debugowania i dostoswywania
-            if (czas_skoku == 0)
+            /*if (czas_skoku == 0)
             {
                 if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                 {
@@ -2075,7 +2075,7 @@ float playerY = 300;
 
             rysowanie_hit_box(Hit_box_kusza, GREEN);
 
-            // istotne prosze nie usuwać !!!!
+            // istotne prosze nie usuwać !!!! */
 
             // animacja szkieleta
 
