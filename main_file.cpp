@@ -505,8 +505,8 @@ int main()
 
     Vector2 polozenie_gracza = {polozenie_gracza_x, polozenie_gracza_y}; // inicjowanie vektora 2 wymiarowego
 
-    float minY = polozenie_gracza.y - 50;  
-float maxY = polozenie_gracza.y - 10;
+    float minY = polozenie_gracza.y - 30;  
+    float maxY = polozenie_gracza.y - 10;
 
     // zmienne zamiast int klatka_skoku
     float czas_skoku = 0.0f;
@@ -743,7 +743,7 @@ float playerY = 300;
     if (!powerUps[i].aktywny) continue;
 
     // przesuwanie monety
-    powerUps[i].polozenie.x -= 100.0f * GetFrameTime();
+    powerUps[i].polozenie.x -= 150.0f * GetFrameTime();
 
     // kolizja z graczem
     Rectangle playerRect = { Hit_box_gracza.x, Hit_box_gracza.y, Hit_box_gracza.width, Hit_box_gracza.height };
@@ -1292,7 +1292,21 @@ float playerY = 300;
                             if (!powerUps[i].aktywny) continue;
 
                             // przesuwamy z prędkością planszy (tak jak przeszkody)
-                            powerUps[i].polozenie.x -= 300.0f * GetFrameTime();
+                            powerUps[i].polozenie.x -= 150.0f * GetFrameTime();
+
+                            Rectangle playerRect = { Hit_box_gracza.x, Hit_box_gracza.y, Hit_box_gracza.width, Hit_box_gracza.height };
+    Rectangle powerRect  = { powerUps[i].polozenie.x - 5, powerUps[i].polozenie.y - 5, powerUps[i].size + 10, powerUps[i].size + 10 };
+
+    if (CheckCollisionRecs(playerRect, powerRect))
+    {
+           // jeśli życie nie jest pełne, dodaj jedno
+        if (zycie < maxZycie) 
+            zycie++;    
+       
+
+        powerUps[i].aktywny = false; // zbieramy monetę
+        continue; // pomijamy resztę, żeby nie sprawdzać pozycję poza ekranem
+    }
 
                             // jeśli wyleciało poza ekran, zdeaktywuj
                             if (powerUps[i].polozenie.x + powerUps[i].size < 0)
