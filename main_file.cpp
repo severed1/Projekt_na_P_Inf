@@ -274,7 +274,7 @@ int main()
 {
     InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarac
     //muzyka
-    InitAudioDevice(); //włączamy system audio raylib
+    //InitAudioDevice(); //włączamy system audio raylib
     Music music = LoadMusicStream("assets/background/medieval_energetic_loop.wav");// wczytujemy muzykę
     music.looping = true; //muzyka zapętlona automatycznie
     PlayMusicStream(music);// start muzyki (odtwarzanie w tle)
@@ -336,14 +336,19 @@ int main()
 
     Texture2D boss_tekstura = LoadTexture("assets/Boss/boss.png");
     Texture2D boss_tekstura_laser_1 = LoadTexture("assets/Boss/boss_laser_1.png");
+    Texture2D boss_tekstura_laser_1_zielony = LoadTexture("assets/Boss/boss_laser_zielony_1.png");
     Texture2D boss_tekstura_laser_2 = LoadTexture("assets/Boss/boss_laser_2.png");
+    Texture2D boss_tekstura_laser_2_zielony = LoadTexture("assets/Boss/boss_laser_zielony_2.png");
     Texture2D boss_tekstura_2 = LoadTexture("assets/Boss/boss_2.png");
     Texture2D napis_o_bossie = LoadTexture("assets/background/napis.png");
     Texture2D laser = LoadTexture("assets/Boss/laser_2.png");
+    Texture2D laser_zielony = LoadTexture("assets/Boss/laser_zielony.png");
     Texture2D kusza = LoadTexture("assets/Boss/kusza.png");
     Texture2D serce_bossa = LoadTexture("assets/Boss/serce_bossa.png");
 
     Texture2D fireball = LoadTexture("assets/Boss/fireball.png");
+
+    Texture2D fireball_zielony = LoadTexture("assets/Boss/fireball_zielony.png");
 
     Texture2D serceTexture = LoadTexture("assets/background/serce.png"); // życie gracza
 
@@ -1743,7 +1748,14 @@ float playerY = 300;
                 // rysowanie bossa w trakcie ucieczki
                 if (ucieczka)
                 {
-                    DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                    if(aktualnyStan == LEVELTWO)
+                    {
+                        DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
+                    }
+                    else
+                    {
+                        DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                    }
                 }
 
                 if (szkielet.czy_jest_zatrzymany && duch.czy_jest_zatrzymany && bat.czy_jest_zatrzymany && szczur.czy_jest_zatrzymany)
@@ -1757,7 +1769,14 @@ float playerY = 300;
 
                     if (co_ile_laser / 2 <= Animacja_lasera && Animacja_lasera <= co_ile_laser / 2 + wind_up_laseru)
                     {
-                        DrawTextureEx(czaszka_boss.tekstury[1], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                        if(aktualnyStan == LEVELTWO)
+                        {
+                            DrawTextureEx(boss_tekstura_laser_1_zielony, czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
+                        }
+                        else
+                        {
+                            DrawTextureEx(czaszka_boss.tekstury[1], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                        }
                         czaszka_boss.laser_rozgrzewanie = true;
                     }
                     else if (co_ile_laser / 2 + wind_up_laseru <= Animacja_lasera && Animacja_lasera <= co_ile_laser / 2 + wind_up_laseru + czas_trwania_laseru)
@@ -1774,18 +1793,47 @@ float playerY = 300;
                         }
                         czaszka_boss.laser_rozgrzewanie = false;
                         czaszka_boss.laser_on = true;
-                        DrawTextureEx(czaszka_boss.tekstury[2], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
-                        if (Animacja_migania_laseru < 3)
+                        if(aktualnyStan == LEVELTWO)
                         {
-                            DrawTextureEx(laser_przeszkoda.tekstura, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, YELLOW);
-                        }
-                        else if (Animacja_migania_laseru < 6)
-                        {
-                            DrawTextureEx(laser_przeszkoda.tekstura, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, RED);
+                            DrawTextureEx(boss_tekstura_laser_2_zielony, czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
                         }
                         else
                         {
-                            DrawTextureEx(laser_przeszkoda.tekstura, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, WHITE);
+                        DrawTextureEx(czaszka_boss.tekstury[2], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                        }
+                        if (Animacja_migania_laseru < 3)
+                        {
+                            if(aktualnyStan == LEVELTWO)
+                            {
+                                DrawTextureEx(laser_zielony, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, WHITE);
+                            }
+                            else
+                            {
+                                DrawTextureEx(laser_przeszkoda.tekstura, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, YELLOW);
+                            }
+                        }
+                        else if (Animacja_migania_laseru < 6)
+                        {
+                            
+                            if(aktualnyStan == LEVELTWO)
+                            {
+                                DrawTextureEx(laser_zielony, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, GREEN);
+                            }
+                            else
+                            {
+                                DrawTextureEx(laser_przeszkoda.tekstura, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, RED);
+                            }
+                        }
+                        else
+                        {
+                            if(aktualnyStan == LEVELTWO)
+                            {
+                                DrawTextureEx(laser_zielony, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, DARKGREEN);
+                            }
+                            else
+                            {
+                                DrawTextureEx(laser_przeszkoda.tekstura, laser_przeszkoda.polozenie, 0.0f, skalowanie_obrazu_laseru, WHITE);
+                            }
                         }
                     }
                     else
@@ -1793,11 +1841,25 @@ float playerY = 300;
                         if (Animacja_jedzenia < 30)
                         {
                             czaszka_boss.laser_on = false;
-                            DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                            if(aktualnyStan == LEVELTWO)
+                            {
+                                DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
+                            }
+                            else
+                            {
+                                DrawTextureEx(czaszka_boss.tekstury[3], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                            }
                         }
                         else
                         {
-                            DrawTextureEx(czaszka_boss.tekstury[0], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                            if(aktualnyStan == LEVELTWO)
+                            {
+                                DrawTextureEx(czaszka_boss.tekstury[0], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
+                            }
+                            else
+                            {
+                                DrawTextureEx(czaszka_boss.tekstury[0], czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, GRAY);
+                            }
                         }
                     }
                     // rysowanie serc bossa
@@ -1925,7 +1987,14 @@ float playerY = 300;
                     // rysowanie fireballa
                     if (krencenie_sie)
                     {
-                        DrawTextureEx(fireball_przeszkoda.tekstura, fireball_przeszkoda.polozenie, 0.0f, skalowanie_borazu_fireball, WHITE);
+                        if(aktualnyStan == LEVELTWO)
+                        {
+                            DrawTextureEx(fireball_zielony, fireball_przeszkoda.polozenie, 0.0f, skalowanie_borazu_fireball, WHITE);
+                        }
+                        else
+                        {
+                            DrawTextureEx(fireball_przeszkoda.tekstura, fireball_przeszkoda.polozenie, 0.0f, skalowanie_borazu_fireball, WHITE);
+                        }
                     }
                     // rysowanie bolta
 
@@ -2059,21 +2128,21 @@ float playerY = 300;
                 rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
             }
 
-            rysowanie_hit_box(Hit_box_szkieleta, GREEN);
-            rysowanie_hit_box(Hit_box_ducha_1, GREEN);
+            rysowanie_hit_box(Hit_box_szkieleta, { 107, 142, 35, 255 });
+            rysowanie_hit_box(Hit_box_ducha_1, { 107, 142, 35, 255 });
 
-            rysowanie_hit_box(Hit_box_ducha_2, GREEN);
-            rysowanie_hit_box(Hit_box_ducha_3, GREEN);
-            rysowanie_hit_box(Hit_box_ducha_4, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_2, { 107, 142, 35, 255 });
+            rysowanie_hit_box(Hit_box_ducha_3, { 107, 142, 35, 255 });
+            rysowanie_hit_box(Hit_box_ducha_4, { 107, 142, 35, 255 });
 
-            rysowanie_hit_box(Hit_box_bat, GREEN);
+            rysowanie_hit_box(Hit_box_bat, { 107, 142, 35, 255 });
 
-            rysowanie_hit_box(Hit_box_szczura, GREEN);
-            rysowanie_hit_box(Hit_box_lasera, GREEN);
+            rysowanie_hit_box(Hit_box_szczura, { 107, 142, 35, 255 });
+            rysowanie_hit_box(Hit_box_lasera, { 107, 142, 35, 255 });
 
-            rysowanie_hit_box(Hit_box_fireball, GREEN);
+            rysowanie_hit_box(Hit_box_fireball, { 107, 142, 35, 255 });
 
-            rysowanie_hit_box(Hit_box_kusza, GREEN);
+            rysowanie_hit_box(Hit_box_kusza, { 107, 142, 35, 255 });
 
             // istotne prosze nie usuwać !!!! */
 
