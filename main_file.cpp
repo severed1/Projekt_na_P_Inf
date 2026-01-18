@@ -79,7 +79,7 @@
 #define moc_trznsienia_ziemi 2
 #define dlugosc_wysuwania 500
 #define dlugosc_czekania_az_boss_zaczie_ruszac 300
-#define dlugosc_trwania_znaku 800
+#define dlugosc_trwania_znaku 400
 #define dystans_do_zatrzymania_przeszkud_gdy_boss 900
 #define speed_fireballa 5
 #define speed_fireballa_krencenie 0.05f
@@ -255,8 +255,9 @@ void GraczTrafiony()
 
 int main()
 {
-    InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarach
-    InitAudioDevice(); //włączamy system audio raylib
+    InitWindow(szerokosc_okna, wysokosc_okna, nazwa_gry_wyswietlana_na_oknie); // inicjuje otwarcie okna o podanych wymiarac
+    //muzyka
+    //InitAudioDevice(); //włączamy system audio raylib
     Music music = LoadMusicStream("assets/background/medieval_energetic_loop.wav");// wczytujemy muzykę
     music.looping = true; //muzyka zapętlona automatycznie
     PlayMusicStream(music);// start muzyki (odtwarzanie w tle)
@@ -343,10 +344,10 @@ int main()
     float rozstrzal_przy_losowaniu = 9000;
     float rozstrzal_przy_losowaniu_czestych = 5000;
     // upewnianie sie ze nie wygeneruja sie zablisko
-    float minDist = 500;
+    float minDist = 700;
     uniform_int_distribution<int> pozycjaX(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu);
     uniform_int_distribution<int> pozycjaX_wysoki(szerokosc_okna + duch_tekstura.width * skalowanie_obrazu_duch, rozstrzal_przy_losowaniu);
-    uniform_int_distribution<int> pozycjay_wysoki(200, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 90);
+    uniform_int_distribution<int> pozycjay_wysoki(260, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 90);
     uniform_int_distribution<int> pozycja_czenste(szerokosc_okna + szkielet_tekstura.width * skalowanie_obrazu_szkieleta, rozstrzal_przy_losowaniu_czestych);
 
     // losowanie dla fire balla
@@ -407,7 +408,7 @@ int main()
     szkielet.tekstura = szkielet_tekstura;
     szkielet.rodzaj_typu_przeszkody = 1;
     szkielet.czy_jest_zatrzymany = false;
-    szkielet.polozenie = {(float)losowa_szkielet, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 40};
+    szkielet.polozenie = {(float)losowa_szkielet, (float)wysokosc_okna - szkielet_tekstura.height * skalowanie_obrazu_szkieleta + 90};
     Vector2 polozenie_startowe_szkieleta = szkielet.polozenie;
 
     // inicjowanie kaktusa wysokiego
@@ -421,7 +422,7 @@ int main()
     przeszkoda szczur;
     szczur.tekstura = szczur_tekstura;
     szczur.rodzaj_typu_przeszkody = 3;
-    szczur.polozenie = {(float)losowa_szczura, (float)wysokosc_okna - szczur_tekstura.height * skalowanie_obrazu_szczura};
+    szczur.polozenie = {(float)losowa_szczura, (float)wysokosc_okna - szczur_tekstura.height * skalowanie_obrazu_szczura + 35};
     Vector2 polozenie_startowe_szczura = szczur.polozenie;
 
     przeszkoda bat;
@@ -448,7 +449,7 @@ int main()
     przeszkoda fireball_przeszkoda;
     fireball_przeszkoda.tekstura = fireball;
     fireball_przeszkoda.rodzaj_typu_przeszkody = 6;
-    fireball_przeszkoda.polozenie = {(float)czaszka_boss.polozenie.x - 200, (float)czaszka_boss.polozenie.y + 550}; // problem
+    fireball_przeszkoda.polozenie = {(float)czaszka_boss.polozenie.x - 200, (float)czaszka_boss.polozenie.y + 620}; // problem
     Vector2 polozenie_startowe_fireballa = fireball_przeszkoda.polozenie;
     // Vector2 polozenie_startowe_fireballa_prawdziwe = polozenie_startowe_fireballa;
 
@@ -479,7 +480,7 @@ int main()
 
     // wartości dla postaci
     float polozenie_gracza_x = 20;
-    float polozenie_gracza_y = GetScreenHeight() - tekstura_gracza_1.height * skalowanie_obrazu_gracza - 60; // ustawianie go na dole
+    float polozenie_gracza_y = GetScreenHeight() - tekstura_gracza_1.height * skalowanie_obrazu_gracza - 40; // ustawianie go na dole
     float ziemiaY = polozenie_gracza_y;
 
     Vector2 polozenie_gracza = {polozenie_gracza_x, polozenie_gracza_y}; // inicjowanie vektora 2 wymiarowego
@@ -784,7 +785,11 @@ float playerY = 300;
 
                 ucieczka = true;
 
-            
+                licznik_klatek_wysuwanie = 0;
+
+                
+               
+                czaszka_boss.laser_rozgrzewanie = false;
 
                 // reset pozycji przeszkud
                 szkielet.polozenie = polozenie_startowe_szkieleta;
@@ -827,15 +832,22 @@ float playerY = 300;
 
                 krencenie_sie = false;
 
+                //reset fireballa
                 distance_dla_fireballa = 0;
 
-                fireball_przeszkoda.polozenie.x = polozenie_startowe_fireballa.x;
-                fireball_przeszkoda.polozenie.y = polozenie_startowe_fireballa.y;
+                angle = 0.0f;
 
-                Hit_box_fireball.x = offsetXfireball;
-                Hit_box_fireball.y = offsetYfireball;
+                resetFireballCircle = true;
+
+                fireball_przeszkoda.polozenie = polozenie_startowe_fireballa;
+
+                Hit_box_fireball.x = Polozenie_poczatkowe_hitbox_fireball.x;
+                Hit_box_fireball.y = Polozenie_poczatkowe_hitbox_fireball.y;
+
 
                 czaszka_boss.ilosc_hp = 3;
+
+                klatka = 0;
 
                 // reset kuszy
                 kusza_item.polozenie.x = pozycjaX_kuszy(gen);
@@ -953,7 +965,7 @@ float playerY = 300;
             }
             // przemieszczanie się napisu
             float speed_napisu = 2.0f;
-            if (polozenie_napisu.y <= 0 && !na_dole && (distanceToBoss) >= boss_fight_distance - dlugosc_trwania_znaku && !po_bossie)
+            if (polozenie_napisu.y <= 0 && !na_dole && !po_bossie && distanceToBoss > 600)
             {
                 if (polozenie_napisu.y == 0)
                 {
@@ -1357,7 +1369,7 @@ float playerY = 300;
                 }
             }
 
-            max_czas_skoku -= log(2 + distance / 1000) / 100000; // w teori powinno uniknąc to problemów przy zaduzej predkosci przeszkud ale moze to usune potem
+            max_czas_skoku -= log(2 + distance / 10000) / 100000; // w teori powinno uniknąc to problemów przy zaduzej predkosci przeszkud ale moze to usune potem
         }
         else if (aktualnyStan == PAUZA)
         {
@@ -1923,35 +1935,35 @@ float playerY = 300;
             }
 
             // rysowanie hit box do debugowania i dostoswywania
-            // if (czas_skoku == 0)
-            // {
-            //     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-            //     {
-            //         rysowanie_hit_box(Hit_box_gracza_slizg, RED);
-            //     }
-            //     else
-            //         rysowanie_hit_box(Hit_box_gracza, RED);
-            // }
-            // else
-            // {
-            //     rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
-            // }
+            if (czas_skoku == 0)
+            {
+                if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+                {
+                    rysowanie_hit_box(Hit_box_gracza_slizg, RED);
+                }
+                else
+                    rysowanie_hit_box(Hit_box_gracza, RED);
+            }
+            else
+            {
+                rysowanie_hit_box(Hit_box_gracza_w_skoku, RED);
+            }
 
-            // rysowanie_hit_box(Hit_box_szkieleta, GREEN);
-            // rysowanie_hit_box(Hit_box_ducha_1, GREEN);
+            rysowanie_hit_box(Hit_box_szkieleta, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_1, GREEN);
 
-            // rysowanie_hit_box(Hit_box_ducha_2, GREEN);
-            // rysowanie_hit_box(Hit_box_ducha_3, GREEN);
-            // rysowanie_hit_box(Hit_box_ducha_4, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_2, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_3, GREEN);
+            rysowanie_hit_box(Hit_box_ducha_4, GREEN);
 
-            // rysowanie_hit_box(Hit_box_bat, GREEN);
+            rysowanie_hit_box(Hit_box_bat, GREEN);
 
-            // rysowanie_hit_box(Hit_box_szczura, GREEN);
-            // rysowanie_hit_box(Hit_box_lasera, GREEN);
+            rysowanie_hit_box(Hit_box_szczura, GREEN);
+            rysowanie_hit_box(Hit_box_lasera, GREEN);
 
-            // rysowanie_hit_box(Hit_box_fireball, GREEN);
+            rysowanie_hit_box(Hit_box_fireball, GREEN);
 
-            // rysowanie_hit_box(Hit_box_kusza, GREEN);
+            rysowanie_hit_box(Hit_box_kusza, GREEN);
 
             // istotne prosze nie usuwać !!!!
 
