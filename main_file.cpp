@@ -649,7 +649,7 @@ float playerY = 300;
             // dystans do bossa mierzymy oddzielnie niz distance zeby efektywnie go loopować
             if (!w_trakcie_bossa && !ucieczka && !po_bossie)
             {
-                distanceToBoss++;
+                distanceToBoss+= 0.25;
             }
 
 
