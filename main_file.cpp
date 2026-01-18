@@ -106,6 +106,7 @@ struct przeszkoda
     bool czy_jest_zatrzymany;
 };
 
+
 struct item
 {
     Texture2D tekstura;
@@ -123,6 +124,23 @@ struct boss
     bool laser_rozgrzewanie;
     
 };
+
+struct PowerUp {
+    Vector2 polozenie;
+    float size;
+    bool aktywny; // czy można zebrać
+    int typ;      // 0 = +dystans, 1 = +życie
+};
+
+std::vector<PowerUp> powerUps; // lista monet/power-upów
+float spawnTimer = 0.0f;        // czas do następnego pojawienia się power-upu
+float spawnInterval = 7.4f;  
+float ostatniPowerUpTime = 0.0f; // czas ostatniego power-upa
+float powerUpCooldown = 5.0f;    // min. 5 sekund między power-upami
+const float powerSize = 15.0f;
+
+
+
 
 
 // stany gry
@@ -207,7 +225,7 @@ void UpdateTop10(string nick, int wynik)
 //         h * scale
 //     };
 // }
-
+const int maxZycie = 3;
 int zycie = 3; // ilość serc/gracza
 bool trafiony = false;
 int poprzednieZycie = 3;
@@ -336,6 +354,8 @@ int main()
     Texture2D wznowText = LoadTexture("assets/przyciski/wznow.png");
     Texture2D retryText = LoadTexture("assets/przyciski/retry.png");
     Texture2D bolt = LoadTexture("assets/Boss/bolt.png");
+    Texture2D coinTexture = LoadTexture("assets/itemy/moneta.png"); 
+    
 
     int animacja = 0; // nie istotne uzyte do próby animacji
     // generowanie losowej pozycji dla kaktusow
@@ -471,6 +491,7 @@ int main()
     bool startLevelOne = true; // dodanie tektu przy pierwszej zmianie predkosci
     float timer_tekst = 0.0f;
     std::string tekst_fabularny = "Wyruszamy ku przygodzie!"; //  tekst fabularny
+    
 
     //---ZMIENNE DO TABELI WYNIKOW I NICKU GRACZA
     char nickname[16] = "\0"; // tablica na nick (15znakow)
@@ -483,6 +504,9 @@ int main()
     float ziemiaY = polozenie_gracza_y;
 
     Vector2 polozenie_gracza = {polozenie_gracza_x, polozenie_gracza_y}; // inicjowanie vektora 2 wymiarowego
+
+    float minY = polozenie_gracza.y - 50;  
+float maxY = polozenie_gracza.y - 10;
 
     // zmienne zamiast int klatka_skoku
     float czas_skoku = 0.0f;
@@ -563,7 +587,7 @@ int main()
     string tekst;
     float powerX = 200;
 float powerY = 200;
-const float powerSize = 15;   // rozmiar kwadratu
+const float powerSize = 10;   // rozmiar kwadratu
 int powerCount = 0;           // ile razy gracz zebrał power-up
 const float playerRadiusForCoins = 20.0f;
 
@@ -571,11 +595,13 @@ const float playerRadiusForCoins = 20.0f;
 float playerX = 400;
 float playerY = 300;
 
+
     while (!WindowShouldClose()) // utrzymuje okno otwarte i wykonuje polecenie wymagane przy operacji na oknach
     {
         
 
         UpdateMusicStream(music);
+
        
         //-- IF DLA POSZCZEGOLNYCH STANOW GRY
         if (aktualnyStan == MENU)
@@ -587,6 +613,7 @@ float playerY = 300;
                 aktualnyStan = LEVELONE;
                 gra_wystartowala = true;
             }
+            
 
             if (CzyKliknietoPrzycisk(btnExit))
                 break; // zamykanie programu
@@ -668,6 +695,7 @@ float playerY = 300;
                     trafiony = true;
                 }
             }
+            
 
             if (czaszka_boss.laser_on)
             {
@@ -709,6 +737,34 @@ float playerY = 300;
                     IsDead = true;
                 }
             }
+             // --- przesuwanie power-upów ---
+            for (size_t i = 0; i < powerUps.size(); i++)
+{
+    if (!powerUps[i].aktywny) continue;
+
+    // przesuwanie monety
+    powerUps[i].polozenie.x -= 100.0f * GetFrameTime();
+
+    // kolizja z graczem
+    Rectangle playerRect = { Hit_box_gracza.x, Hit_box_gracza.y, Hit_box_gracza.width, Hit_box_gracza.height };
+    Rectangle powerRect  = { powerUps[i].polozenie.x - 5, powerUps[i].polozenie.y - 5, powerUps[i].size + 10, powerUps[i].size + 10 };
+
+    if (CheckCollisionRecs(playerRect, powerRect))
+    {
+           // jeśli życie nie jest pełne, dodaj jedno
+        if (zycie < maxZycie) 
+            zycie++;    
+       
+
+        powerUps[i].aktywny = false; // zbieramy monetę
+        continue; // pomijamy resztę, żeby nie sprawdzać pozycję poza ekranem
+    }
+
+    // jeśli wyleciało poza ekran
+    if (powerUps[i].polozenie.x + powerUps[i].size < 0)
+        powerUps[i].aktywny = false;
+}
+
 
             // sprawdzanie hit boxu kuszy
             if (w_trakcie_bossa)
@@ -997,7 +1053,7 @@ float playerY = 300;
             {
                 czas_skoku = 0.001f; // zaczynamy skok
             }
-
+           
             if (czas_skoku > 0)
             {
                 float t = czas_skoku / max_czas_skoku;
@@ -1053,6 +1109,7 @@ float playerY = 300;
                     tloNastepne = tloAktualne;
                 }
             }
+            
 
             float game_speed = 5 + log(1 + distance / 300);
 
@@ -1086,6 +1143,8 @@ float playerY = 300;
                 {
                     boltT = endT;
                 }
+               
+
 
                 // X 0 → czaszka_boss.polozenie.x
                 Polozenie_bolt.x = startX + (endX - startX) * boltT;
@@ -1227,6 +1286,17 @@ float playerY = 300;
                                 if (!TooCloseForDuch(x, relaxed, szkielet.polozenie, bat.polozenie, szczur.polozenie))
                                     break;
                             }
+                        }
+                                                for (size_t i = 0; i < powerUps.size(); i++)
+                        {
+                            if (!powerUps[i].aktywny) continue;
+
+                            // przesuwamy z prędkością planszy (tak jak przeszkody)
+                            powerUps[i].polozenie.x -= 300.0f * GetFrameTime();
+
+                            // jeśli wyleciało poza ekran, zdeaktywuj
+                            if (powerUps[i].polozenie.x + powerUps[i].size < 0)
+                                powerUps[i].aktywny = false;
                         }
 
                         duch.polozenie.x = (float)x;
@@ -1577,6 +1647,23 @@ float playerY = 300;
                 break;
             }
         }
+        // Aktualizacja spawnu monet / power-upów
+            spawnTimer += GetFrameTime();
+            if (spawnTimer >= spawnInterval)
+            {
+                spawnTimer = 0.0f;
+
+                PowerUp p;
+                p.polozenie = { (float)szerokosc_okna + 50, (float)(rand() % (wysokosc_okna - 100) + 50) }; 
+                p.size = 50.0f;
+                p.aktywny = true;
+
+                // Losujemy typ: 70% +dystans, 30% +życie
+                p.typ = (rand() % 10 < 7) ? 0 : 1;
+
+                powerUps.push_back(p);
+            }
+
 
         //--- RYSOWANIE DLA MENU I DLA GRY
         BeginDrawing();
@@ -1606,6 +1693,9 @@ float playerY = 300;
             string n;
             int d;
             int yOffset = 0;
+          
+
+        
 
             while (plikPokaz >> n >> d && yOffset < 10)
             {
@@ -1888,8 +1978,26 @@ float playerY = 300;
                 {
                     DrawTextureEx(szkielet_tekstura_3, szkielet.polozenie, 0.0f, skalowanie_obrazu_szkieleta, WHITE);
                 }
+                for (size_t i = 0; i < powerUps.size(); i++)
+                {
+                    if (!powerUps[i].aktywny) continue;
+
+                    if (powerUps[i].typ == 0)
+                        DrawTextureEx(coinTexture, powerUps[i].polozenie, 0.0f, powerUps[i].size / coinTexture.width, GOLD);
+                    
+                     else
+                    DrawTextureEx(
+        coinTexture,                         // tekstura monety
+        powerUps[i].polozenie,               // pozycja monety
+        0.0f,                                // brak rotacji
+        powerUps[i].size / coinTexture.width, // skala, żeby dopasować rozmiar
+        WHITE                                // kolor (bierzemy oryginalny)
+    );   
+                    
+                }
 
                 if (czas_skoku == 0)
+               
                 {
                     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
                     {
