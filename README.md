@@ -1,9 +1,34 @@
-# Projekt_na_P_Inf
-Jak bedziecie chceli to kompilowac to musicie uzyc takiej komedy 
-`g++ main_file.cpp -o game -no-pie $(pkg-config --cflags --libs raylib)`
-i do tego musicie miec zainstalowaną ta biblioteke raylib.h na ubuntu robi się to tak 
+# Dungeon Run
+Projekt zawiera grę pt "Dungeon Run" typu endless runner. Wykorzystuje bibliotekę raylib 5.5, dlatego należy mieć ją zainstalowaną na urządzeniu.
+
+Instalacja raylib na Windows:
+Należy pobrać odpowiedni zip z poniższej strony:
+
+https://github.com/raysan5/raylib/releases/tag/5.5
+
+Wersja pobierana zależy od kompilatora, my korzystaliśmy z g++. Następnie należy umieścić folder raylib w wybranym miejscu i zapisać do niego ścieżkę w pliku c_cpp_properies.json w miejscach:
+
+"includePath": [
+                "${workspaceFolder}/**",
+                "C:/raylib/include"
+            ],
+"browse": {
+                "path": [
+                    "C:/raylib/include"
+                ]
+            }
+Program powinien wtedy widzieć raylib, gdy go includujemy w pliku gry.
+
+Instalacja raylib na ubuntu:
 `sudo apt update`
 `sudo apt install libraylib-dev`
+
+Kompilacja gry:
+`g++ main_file.cpp -o game -no-pie $(pkg-config --cflags --libs raylib)`
+W przypadku, gdy program nie widzi raylib.h można użyć komendy:
+`g++ main_file.cpp -o 'nazwa_gry' -I 'sciezka_do_raylib_include' -L 'sciezka_do_raylib_lib' -lraylib -lopengl32 -lgdi32 -lwinmm`
+
+Po kompilacji uruchamiamy gre plikiem .exe, w naszym przypadku gra.exe.
 
 Komendy do gita: 
 
@@ -15,22 +40,4 @@ Komendy do gita:
 
 `git pull` - zciąga zmiany na lokalne urządzenie 
 
-Pozycja (0, 0) z tego co rozumiem jest w lewym górnym rogu okna
-
-W folderze background jest przykładowe tło (wymiary ma 480szer/180wys wiec mozna znalezc jakies troche wieksze do testow), jak już ustalimy co i jak to poszukamy takiego jakie bedzie pasowało do gry, dla osobnych leveli możemy dawać inne tła przykładowo.
-Tło działa w taki sposób że jest grafika tak narysowana ze jakby ciągnie się w nieskończonośc jeżeli ustawimy kolejne kopie koło siebie (to sie nazywa obraz parallax bodajże). W grze możemy po porstu operować na dwóch tłach - jedno dojdzie do konca to od razu zaczyna się drugie a to pierwsze zostaje przeniesione za drugie i tak w nieskończoność, to daje wrażenie że postać biegnie a tak naprwde stoi w miejscu i tylko tło sie rusza.
-
-Menu jest nie dopasowane bo musiałem je zmienić z powodu zmiany tła gry i nie miałem czasu dzisiaj już go naprawić 
-
-Czasami gra może się zawieszać/nie odpowiedać popracuje nad tym jutro wszystko inne powinno być ok jak macie jakieś problemy do zgłoszenia to możecie też to robić na githubie w sekcji Issues
-
-pousuwałem stare grafiki ale jeśli z jakiegoś powodu będziecie ich potrzebowali to może je sciągnąć ze starych commitów 
-
-jak dla mnie to baza poziomu 1 jest już gotowa teraz trzebasię zabrać za 1 boss fight (mozna by lekko poprawić niektóre hit boxy ale mi się narazie nie chce)
-
-
-Plik zrobił się duzy wiec polecam korzystac z `CTRL + f czylil` wyszukiwania słów kluczowych (mozna sobie dodwac w komentazu i odrazu znajdowac) i `CTRL + left mouse` czyli przesuwasz sie do definicji a `CTRL + ALT + "-"` wraca tam gdzie byliscie wczesniej
-
-moze niedziałac restart bo smierci, czasami przeszkody moga sie pojawiac za blisko 
-
-Część zeczy nie dziala skoncze w nastepnym commicie, gra jest teraz stosunkowo trudna ale da sie przejsc  (ps. jak cos dodajecie typu grafke to dodawajcie to pls do odpowiedniego folderu)
+`git add .` - Pozwala nam upewnić się że wszystkie chciane zmiany zostaną dołączone do naszego commita
