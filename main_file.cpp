@@ -649,7 +649,7 @@ float playerY = 300;
             // dystans do bossa mierzymy oddzielnie niz distance zeby efektywnie go loopować
             if (!w_trakcie_bossa && !ucieczka && !po_bossie)
             {
-                distanceToBoss+= 0.25;
+                distanceToBoss++;
             }
 
 
@@ -1795,7 +1795,7 @@ float playerY = 300;
                         czaszka_boss.laser_on = true;
                         if(aktualnyStan == LEVELTWO)
                         {
-                            DrawTextureEx(boss_tekstura_laser_2_zielony, czaszka_boss.polozenie, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
+                            DrawTextureEx(boss_tekstura_laser_2_zielony, {czaszka_boss.polozenie.x - 20, czaszka_boss.polozenie.y - 40}, 0.0f, skalowanie_obrazu_boss, { 107, 142, 35, 255 });
                         }
                         else
                         {
@@ -2065,17 +2065,17 @@ float playerY = 300;
                 {
                     if (!powerUps[i].aktywny) continue;
 
-                    if (powerUps[i].typ == 0)
-                        DrawTextureEx(coinTexture, powerUps[i].polozenie, 0.0f, powerUps[i].size / coinTexture.width, GOLD);
+    //                 if (powerUps[i].typ == 0)
+    //                     DrawTextureEx(coinTexture, powerUps[i].polozenie, 0.0f, powerUps[i].size / coinTexture.width, GOLD);
                     
-                     else
-                    DrawTextureEx(
-        coinTexture,                         // tekstura monety
-        powerUps[i].polozenie,               // pozycja monety
-        0.0f,                                // brak rotacji
-        powerUps[i].size / coinTexture.width, // skala, żeby dopasować rozmiar
-        WHITE                                // kolor (bierzemy oryginalny)
-    );   
+    //                  else
+    //                 DrawTextureEx(
+    //     coinTexture,                         // tekstura monety
+    //     powerUps[i].polozenie,               // pozycja monety
+    //     0.0f,                                // brak rotacji
+    //     powerUps[i].size / coinTexture.width, // skala, żeby dopasować rozmiar
+    //     WHITE                                // kolor (bierzemy oryginalny)
+    // );   
                     
                 }
 
