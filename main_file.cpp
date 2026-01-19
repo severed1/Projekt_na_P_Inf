@@ -2065,17 +2065,17 @@ float playerY = 300;
                 {
                     if (!powerUps[i].aktywny) continue;
 
-    //                 if (powerUps[i].typ == 0)
-    //                     DrawTextureEx(coinTexture, powerUps[i].polozenie, 0.0f, powerUps[i].size / coinTexture.width, GOLD);
+                    if (powerUps[i].typ == 0)
+                        DrawTextureEx(coinTexture, powerUps[i].polozenie, 0.0f, powerUps[i].size / coinTexture.width, GOLD);
                     
-    //                  else
-    //                 DrawTextureEx(
-    //     coinTexture,                         // tekstura monety
-    //     powerUps[i].polozenie,               // pozycja monety
-    //     0.0f,                                // brak rotacji
-    //     powerUps[i].size / coinTexture.width, // skala, żeby dopasować rozmiar
-    //     WHITE                                // kolor (bierzemy oryginalny)
-    // );   
+                     else
+                    DrawTextureEx(
+        coinTexture,                         // tekstura monety
+        powerUps[i].polozenie,               // pozycja monety
+        0.0f,                                // brak rotacji
+        powerUps[i].size / coinTexture.width, // skala, żeby dopasować rozmiar
+        WHITE                                // kolor (bierzemy oryginalny)
+    );   
                     
                 }
 
